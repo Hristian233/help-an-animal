@@ -12,41 +12,33 @@ const defaultCenter = {
   lng: 23.3219,
 };
 
-type LocalMarker = {
+type MarkerType = {
+  id: string;
+  animal: string;
+  note: string | null;
   lat: number;
   lng: number;
+  image_url: string | null;
+  user_id: string | null;
 };
 
 function App() {
-  const [markers, setMarkers] = useState<LocalMarker[]>([]);
+  const [markers, setMarkers] = useState<MarkerType[]>([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadMarkers = async () => {
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/markers/all`
         );
         setMarkers(res.data);
-      } catch (err) {
-        console.error("Error loading markers:", err);
+      } catch (error) {
+        console.error("Error loading markers:", error);
       }
     };
 
-    fetchData();
+    loadMarkers();
   }, []);
-
-  const handleMapClick = (e: google.maps.MapMouseEvent) => {
-    if (!e.latLng) return;
-
-    const newMarker = {
-      lat: e.latLng.lat(),
-      lng: e.latLng.lng(),
-    };
-
-    setMarkers((prev) => [...prev, newMarker]);
-
-    console.log("Clicked:", newMarker);
-  };
 
   return (
     <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
@@ -54,10 +46,18 @@ function App() {
         mapContainerStyle={containerStyle}
         center={defaultCenter}
         zoom={8}
-        onClick={handleMapClick}
       >
-        {markers.map((m, i) => (
-          <Marker key={i} position={{ lat: m.lat, lng: m.lng }} />
+        {markers.map((m) => (
+          <Marker
+            key={m.id}
+            position={{ lat: m.lat, lng: m.lng }}
+            icon={{
+              url: m.image_url ?? "",
+              scaledSize: new google.maps.Size(50, 50),
+              origin: new google.maps.Point(0, 0),
+              anchor: new google.maps.Point(25, 25),
+            }}
+          />
         ))}
       </GoogleMap>
     </LoadScript>
