@@ -14,6 +14,8 @@ class Marker(BaseModel):
     id: UUID
     animal: str
     note: Optional[str]
+    lat: float
+    lng: float
     image_url: Optional[str]
     user_id: Optional[UUID]
 
