@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+assert DATABASE_URL is not None, "DATABASE_URL environment variable is missing"
 
 engine = create_engine(DATABASE_URL, echo=True)
 
