@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { useState } from "react";
+
+const containerStyle = {
+  width: "100vw",
+  height: "100vh",
+};
+
+const defaultCenter = {
+  lat: 42.6977,  // Sofia
+  lng: 23.3219
+};
+
+
+type LocalMarker = {
+  lat: number;
+  lng: number;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [markers, setMarkers] = useState<LocalMarker[]>([]);
+
+  const handleMapClick = (e: google.maps.MapMouseEvent) => {
+    if (!e.latLng) return;
+
+    const newMarker = {
+      lat: e.latLng.lat(),
+      lng: e.latLng.lng(),
+    };
+
+    setMarkers((prev) => [...prev, newMarker]);
+
+    console.log("Clicked:", newMarker);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={defaultCenter}
+        zoom={8}
+        onClick={handleMapClick}
+      >
+        {markers.map((m, i) => (
+          <Marker key={i} position={{ lat: m.lat, lng: m.lng }} />
+        ))}
+      </GoogleMap>
+    </LoadScript>
+  );
 }
 
-export default App
+export default App;
