@@ -1,6 +1,12 @@
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  InfoWindow,
+  LoadScript,
+  Marker,
+} from "@react-google-maps/api";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { animalIcons } from "./helpers/animalIcons";
 
 const containerStyle = {
   width: "100vw",
@@ -24,6 +30,7 @@ type MarkerType = {
 
 function App() {
   const [markers, setMarkers] = useState<MarkerType[]>([]);
+  const [selectedMarker, setSelectedMarker] = useState<MarkerType | null>(null);
 
   useEffect(() => {
     const loadMarkers = async () => {
@@ -46,19 +53,39 @@ function App() {
         mapContainerStyle={containerStyle}
         center={defaultCenter}
         zoom={8}
+        options={{
+          streetViewControl: false,
+        }}
       >
         {markers.map((m) => (
           <Marker
             key={m.id}
             position={{ lat: m.lat, lng: m.lng }}
             icon={{
-              url: m.image_url ?? "",
-              scaledSize: new google.maps.Size(50, 50),
-              origin: new google.maps.Point(0, 0),
-              anchor: new google.maps.Point(25, 25),
+              url: animalIcons[m.animal] ?? "/icons/default.png",
+              scaledSize: new google.maps.Size(40, 40),
+              anchor: new google.maps.Point(20, 20),
             }}
+            onClick={() => setSelectedMarker(m)}
           />
         ))}
+
+        {selectedMarker && (
+          <InfoWindow
+            position={{ lat: selectedMarker.lat, lng: selectedMarker.lng }}
+            onCloseClick={() => setSelectedMarker(null)}
+          >
+            <div style={{ width: "200px" }}>
+              <img
+                src={selectedMarker.image_url ?? ""}
+                alt="animal"
+                style={{ width: "100%", borderRadius: "8px" }}
+              />
+              <h4>{selectedMarker.animal.toUpperCase()}</h4>
+              <p>{selectedMarker.note}</p>
+            </div>
+          </InfoWindow>
+        )}
       </GoogleMap>
     </LoadScript>
   );
