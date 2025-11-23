@@ -16,9 +16,28 @@ def get_db():
         db.close()
 
 
-@router.post("/", response_model=schemas.Marker)
+@router.post("/")
 def create_marker(marker: schemas.MarkerCreate, db: Session = Depends(get_db)):
-    return crud.create_marker(db, marker)
+    db_marker = models.Marker(
+        animal=marker.animal,
+        note=marker.note,
+        location=f"SRID=4326;POINT({marker.lng} {marker.lat})",
+        image_url=marker.image_url,
+    )
+    db.add(db_marker)
+    db.commit()
+    db.refresh(db_marker)
+
+    # Return JSON-safe response
+    return {
+        "id": db_marker.id,
+        "animal": db_marker.animal,
+        "note": db_marker.note,
+        "lat": marker.lat,
+        "lng": marker.lng,
+        "image_url": db_marker.image_url
+    }
+
 
 
 @router.get("/")
@@ -40,8 +59,7 @@ def get_all_markers(db: Session = Depends(get_db)):
         models.Marker.note,
         func.ST_Y(cast(models.Marker.location, Geometry)).label("lat"),
         func.ST_X(cast(models.Marker.location, Geometry)).label("lng"), 
-        models.Marker.image_url,
-        models.Marker.user_id
+        models.Marker.image_url
     ).all()
 
     return [
@@ -51,8 +69,7 @@ def get_all_markers(db: Session = Depends(get_db)):
             "note": r.note,
             "lat": r.lat,
             "lng": r.lng,
-            "image_url": r.image_url,
-            "user_id": r.user_id
+            "image_url": r.image_url
         }
         for r in rows
     ]
