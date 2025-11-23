@@ -9,8 +9,7 @@ def create_marker(db: Session, marker: schemas.MarkerCreate):
         animal=marker.animal,
         note=marker.note,
         location=point,
-        image_url=marker.image_url,
-        user_id=marker.user_id,
+        image_url=marker.image_url
     )
 
     db.add(db_marker)

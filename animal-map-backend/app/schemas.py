@@ -8,16 +8,14 @@ class MarkerCreate(BaseModel):
     lat: float
     lng: float
     image_url: Optional[str] = None
-    user_id: Optional[UUID] = None
 
 class Marker(BaseModel):
-    id: UUID
+    id: int
     animal: str
     note: Optional[str]
     lat: float
     lng: float
     image_url: Optional[str]
-    user_id: Optional[UUID]
 
     class Config:
         orm_mode = True
