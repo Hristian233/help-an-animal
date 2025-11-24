@@ -135,7 +135,6 @@ button:focus-visible {
 
 .modal-select,
 .modal-textarea {
-  width: 100%;
   padding: 8px;
   font-size: 14px;
   border: 1px solid #ccc;
@@ -144,7 +143,7 @@ button:focus-visible {
 
 /* Textarea */
 .modal-textarea {
-  min-height: 70px;
+  min-height: 30px;
   resize: vertical;
 }
 
@@ -180,4 +179,31 @@ button:focus-visible {
 
 .modal-btn.cancel:hover {
   background-color: #d1d5db;
+}
+
+.modal-file-input {
+  position: relative;
+  padding: 10px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: 0.2s;
+  color: transparent; /* hides the ugly "no file chosen" text */
+}
+
+.modal-file-input::file-selector-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 10px;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.modal-file-input::file-selector-button:hover {
+  background: #1e3a8a;
 }

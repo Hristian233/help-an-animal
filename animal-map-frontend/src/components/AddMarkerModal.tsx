@@ -1,3 +1,4 @@
+import "./AddMarkerModal.css";
 import { useState } from "react";
 
 type AddMarkerModalProps = {
@@ -9,6 +10,7 @@ type AddMarkerModalProps = {
     note: string;
     lat: number;
     lng: number;
+    file: File | null;
   }) => void;
 };
 
@@ -18,11 +20,30 @@ export function AddMarkerModal({
   onClose,
   onSave,
 }: AddMarkerModalProps) {
-  const [animal, setAnimal] = useState("dog");
+  const [animal, setAnimal] = useState("fox");
   const [note, setNote] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+
+    setFile(selected);
+
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(selected);
+    setPreview(previewUrl);
+  };
 
   const handleSubmit = () => {
-    onSave({ animal, note, lat, lng });
+    onSave({
+      animal,
+      note,
+      lat,
+      lng,
+      file,
+    });
     onClose();
   };
 
@@ -54,6 +75,19 @@ export function AddMarkerModal({
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />
+
+        <label className="modal-label">Upload Image</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="modal-file-input"
+        />
+
+        {/* Preview the selected image */}
+        {preview && (
+          <img src={preview} alt="Preview" className="modal-preview" />
+        )}
 
         <div className="modal-actions">
           <button className="modal-btn save" onClick={handleSubmit}>
