@@ -15,4 +15,4 @@ Thumbs.db
 *.log
 
 # Google Cloud Storage
-animal-map-478820-e377aadb6935.json
+gcs-key.json
