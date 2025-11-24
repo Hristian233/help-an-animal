@@ -1,9 +1,4 @@
-import {
-  GoogleMap,
-  InfoWindow,
-  LoadScript,
-  Marker,
-} from "@react-google-maps/api";
+import { GoogleMap, InfoWindow, Marker } from "@react-google-maps/api";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { animalIcons } from "./helpers/animalIcons";
