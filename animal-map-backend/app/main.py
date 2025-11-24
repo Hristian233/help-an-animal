@@ -1,11 +1,13 @@
 from fastapi import FastAPI
-from app.routers import markers
+from app.routers import markers, upload
 from app.database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.include_router(upload.router, prefix="/files", tags=["files"])
 
 origins = [
     "http://localhost:5173",
