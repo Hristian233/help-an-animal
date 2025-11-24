@@ -1,5 +1,6 @@
 import "./AddMarkerModal.css";
 import { useState } from "react";
+import { API_URL } from "../config/env.js";
 
 type AddMarkerModalProps = {
   lat: number;
@@ -10,7 +11,7 @@ type AddMarkerModalProps = {
     note: string;
     lat: number;
     lng: number;
-    file: File | null;
+    imageUrl: string | null;
   }) => void;
 };
 
@@ -36,15 +37,60 @@ export function AddMarkerModal({
     setPreview(previewUrl);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    let imageUrl = null;
+
+    if (file) {
+      try {
+        imageUrl = await uploadFileToGCS();
+      } catch (err) {
+        console.error("Image upload failed", err);
+        alert("Image upload failed. Try again.");
+        return;
+      }
+    }
+
     onSave({
       animal,
       note,
       lat,
       lng,
-      file,
+      imageUrl,
     });
     onClose();
+  };
+
+  const uploadFileToGCS = async () => {
+    if (!file) return null;
+
+    // 1. Ask backend for signed URL
+    const res = await fetch(`${API_URL}/files/upload-url`, {
+      method: "GET",
+    });
+
+    if (!res.ok) {
+      console.error("Failed to get signed URL");
+      return null;
+    }
+
+    const { upload_url, public_url } = await res.json();
+
+    // 2. Upload file directly to GCS
+    const uploadRes = await fetch(upload_url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type, // <== VERY IMPORTANT
+      },
+      body: file,
+    });
+
+    if (!uploadRes.ok) {
+      console.error("Upload to GCS failed");
+      return null;
+    }
+
+    // Return final public URL (used in POST /markers)
+    return public_url;
   };
 
   return (
