@@ -77,30 +77,3 @@ def get_all_markers(db: Session = Depends(get_db)):
         }
         for r in rows
     ]
-
-@router.get("/upload-url")
-def generate_upload_url():
-    client = storage.Client.from_service_account_json("gcs-key.json")
-
-    bucket = client.bucket("help-an-animal-images")
-    # Generate unique filename
-    file_name = f"{uuid.uuid4()}.jpg"
-
-    # Blob / object inside bucket
-    blob = bucket.blob(file_name)
-
-    # Create a signed URL that allows PUT upload
-    upload_url = blob.generate_signed_url(
-        version="v4",
-        expiration=timedelta(minutes=10),
-        method="PUT",
-        content_type="image/jpeg",
-    )
-
-    # Public URL (after upload)
-    public_url = f"https://storage.googleapis.com/help-an-animal-images/{file_name}"
-
-    return {
-        "upload_url": upload_url,
-        "file_url": public_url,
-    }
