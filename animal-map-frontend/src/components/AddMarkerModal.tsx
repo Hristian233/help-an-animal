@@ -29,21 +29,40 @@ export function AddMarkerModal({
   return (
     <>
       <div className="modal-overlay" onClick={onClose}></div>
-      <div className="modal-box">
-        <h3>Add Animal</h3>
 
-        <label>Animal Type:</label>
-        <select value={animal} onChange={(e) => setAnimal(e.target.value)}>
+      <div className="modal-box">
+        <button className="modal-close" onClick={onClose}>
+          ×
+        </button>
+
+        <h3 className="modal-title">Add Animal</h3>
+
+        <label className="modal-label">Animal Type</label>
+        <select
+          className="modal-select"
+          value={animal}
+          onChange={(e) => setAnimal(e.target.value)}
+        >
           <option value="fox">Fox</option>
           <option value="dog">Dog</option>
           <option value="cat">Cat</option>
         </select>
 
-        <label>Note:</label>
-        <textarea value={note} onChange={(e) => setNote(e.target.value)} />
+        <label className="modal-label">Note</label>
+        <textarea
+          className="modal-textarea"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
 
-        <button onClick={handleSubmit}>Save</button>
-        <button onClick={onClose}>Cancel</button>
+        <div className="modal-actions">
+          <button className="modal-btn save" onClick={handleSubmit}>
+            Save
+          </button>
+          <button className="modal-btn cancel" onClick={onClose}>
+            Cancel
+          </button>
+        </div>
       </div>
     </>
   );
