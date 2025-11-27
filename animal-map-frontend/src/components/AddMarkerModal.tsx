@@ -11,7 +11,7 @@ type AddMarkerModalProps = {
     note: string;
     lat: number;
     lng: number;
-    imageUrl: string | null;
+    image_url: string | null;
   }) => void;
 };
 
@@ -38,11 +38,11 @@ export function AddMarkerModal({
   };
 
   const handleSubmit = async () => {
-    let imageUrl = null;
+    let image_url = null;
 
     if (file) {
       try {
-        imageUrl = await uploadFileToGCS();
+        image_url = await uploadFileToGCS();
       } catch (err) {
         console.error("Image upload failed", err);
         alert("Image upload failed. Try again.");
@@ -55,7 +55,7 @@ export function AddMarkerModal({
       note,
       lat,
       lng,
-      imageUrl,
+      image_url,
     });
     onClose();
   };
