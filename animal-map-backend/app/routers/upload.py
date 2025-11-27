@@ -35,5 +35,5 @@ def generate_upload_url():
 
     return {
         "upload_url": upload_url,
-        "file_url": public_url,
+        "public_url": public_url,
     }
