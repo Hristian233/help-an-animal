@@ -6,6 +6,7 @@ import { AddMarkerModal } from "./components/AddMarkerModal";
 import { useJsApiLoader } from "@react-google-maps/api";
 import FabMenu from "./components/FabMenu";
 import type { Libraries } from "@react-google-maps/api";
+import { useToast } from "./hooks/useToast";
 
 const containerStyle = {
   width: "100vw",
@@ -43,20 +44,19 @@ function App() {
     lng: number;
   } | null>(null);
   const [isPickingLocation, setIsPickingLocation] = useState(false);
-  const [nearbyCircle, setNearbyCircle] = useState<google.maps.Circle | null>(
-    null
-  );
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries,
   });
-
+  const { showToast } = useToast();
   const handleAddAnimal = () => {
     if (!navigator.geolocation) {
       alert("Geolocation is not supported.");
       return;
     }
+
+    showToast("Click within 100 meters of your location.");
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -171,7 +171,7 @@ function App() {
             );
 
           if (distance > 100) {
-            alert("Please choose a point within 100 meters of your location.");
+            showToast("Click within 100 meters of your location.");
             return;
           }
 
