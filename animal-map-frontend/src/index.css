@@ -267,7 +267,7 @@ button:focus-visible {
 }
 
 .toast {
-  background: rgba(0, 0, 0, 0.85);
+  background: green;
   color: #fff;
   padding: 10px 16px;
   border-radius: 8px;
