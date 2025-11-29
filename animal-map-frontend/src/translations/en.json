@@ -1,0 +1,31 @@
+{
+  "addAnimal": "Add Animal",
+  "clickWithin100m": "Click on the map within 100 meters of your location.",
+  "tooFar": "Point is too far. Must be within 100 meters.",
+  "animalAdded": "Animal added successfully!",
+  "checkingNearby": "Checking nearby animals…",
+  "nearbyAnimals": "Nearby Animals",
+  "yourLocation": "Your location",
+  "loading": "Loading...",
+  "errorLocation": "Failed to get location.",
+  "addManually": "Add manually",
+  "buttons": {
+    "center": "Center",
+    "checkNearby": "Check Nearby",
+    "addAnimal": "Add Animal"
+  },
+  "modal": {
+    "addAnimal": "Add Animal",
+    "animalType": "Animal Type",
+    "note": "Note",
+    "uploadImage": "Upload Image",
+    "preview": "Preview",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "animals": {
+    "fox": "Fox",
+    "dog": "Dog",
+    "cat": "Cat"
+  }
+}
