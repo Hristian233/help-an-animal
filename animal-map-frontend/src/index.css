@@ -274,7 +274,7 @@ button:focus-visible {
   font-size: 14px;
   min-width: 220px;
   text-align: center;
-  animation: fadeInOut 3s ease forwards;
+  animation: fadeInOut 5s ease forwards;
 }
 
 /* Smooth fade in and fade out */
