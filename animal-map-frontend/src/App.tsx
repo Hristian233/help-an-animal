@@ -7,6 +7,7 @@ import { useJsApiLoader } from "@react-google-maps/api";
 import FabMenu from "./components/FabMenu";
 import type { Libraries } from "@react-google-maps/api";
 import { useToast } from "./hooks/useToast";
+import { useT } from "./hooks/useTranslation";
 
 const containerStyle = {
   width: "100vw",
@@ -49,6 +50,7 @@ function App() {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries,
   });
+  const t = useT();
   const { showToast } = useToast();
   const handleAddAnimal = () => {
     if (!navigator.geolocation) {
@@ -56,7 +58,7 @@ function App() {
       return;
     }
 
-    showToast("Click within 100 meters of your location.");
+    showToast(t("clickWithin100m"));
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -171,7 +173,7 @@ function App() {
             );
 
           if (distance > 100) {
-            showToast("Click within 100 meters of your location.");
+            showToast(t("clickWithin100m"));
             return;
           }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useT } from "../hooks/useTranslation";
 
 type FabMenuProps = {
   onCheckNearby: () => void;
@@ -12,6 +13,7 @@ export default function FabMenu({
   onCenterLocation,
 }: FabMenuProps) {
   const [open, setOpen] = useState(false);
+  const t = useT();
 
   return (
     <div className="fab-container">
@@ -19,14 +21,14 @@ export default function FabMenu({
       {open && (
         <div className="fab-actions">
           <button className="fab-button small" onClick={onAddAnimal}>
-            Add Animal
+            {t("buttons.addAnimal")}
           </button>
           <button className="fab-button small" onClick={onCheckNearby}>
-            Check Nearby
+            {t("buttons.checkNearby")}
           </button>
 
           <button className="fab-button small" onClick={onCenterLocation}>
-            Center
+            {t("buttons.center")}
           </button>
         </div>
       )}

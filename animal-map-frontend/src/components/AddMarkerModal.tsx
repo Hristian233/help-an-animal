@@ -1,6 +1,7 @@
 import "./AddMarkerModal.css";
 import { useState } from "react";
 import { API_URL } from "../config/env.js";
+import { useT } from "../hooks/useTranslation";
 
 type AddMarkerModalProps = {
   lat: number;
@@ -25,6 +26,7 @@ export function AddMarkerModal({
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const t = useT();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -79,7 +81,7 @@ export function AddMarkerModal({
     const uploadRes = await fetch(upload_url, {
       method: "PUT",
       headers: {
-        "Content-Type": file.type, // <== VERY IMPORTANT
+        "Content-Type": file.type,
       },
       body: file,
     });
@@ -102,27 +104,27 @@ export function AddMarkerModal({
           ×
         </button>
 
-        <h3 className="modal-title">Add Animal</h3>
+        <h3 className="modal-title">{t("modal.addAnimal")}</h3>
 
-        <label className="modal-label">Animal Type</label>
+        <label className="modal-label">{t("modal.animalType")}</label>
         <select
           className="modal-select"
           value={animal}
           onChange={(e) => setAnimal(e.target.value)}
         >
-          <option value="fox">Fox</option>
-          <option value="dog">Dog</option>
-          <option value="cat">Cat</option>
+          <option value="fox">{t("animals.fox")}</option>
+          <option value="dog">{t("animals.dog")}</option>
+          <option value="cat">{t("animals.cat")}</option>
         </select>
 
-        <label className="modal-label">Note</label>
+        <label className="modal-label">{t("modal.note")}</label>
         <textarea
           className="modal-textarea"
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />
 
-        <label className="modal-label">Upload Image</label>
+        <label className="modal-label">{t("modal.uploadImage")}</label>
         <input
           type="file"
           accept="image/*"
@@ -130,17 +132,20 @@ export function AddMarkerModal({
           className="modal-file-input"
         />
 
-        {/* Preview the selected image */}
         {preview && (
-          <img src={preview} alt="Preview" className="modal-preview" />
+          <img
+            src={preview}
+            alt={t("modal.preview")}
+            className="modal-preview"
+          />
         )}
 
         <div className="modal-actions">
           <button className="modal-btn save" onClick={handleSubmit}>
-            Save
+            {t("modal.save")}
           </button>
           <button className="modal-btn cancel" onClick={onClose}>
-            Cancel
+            {t("modal.cancel")}
           </button>
         </div>
       </div>
