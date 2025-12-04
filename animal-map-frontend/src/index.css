@@ -94,6 +94,8 @@ button:focus-visible {
   flex-direction: column;
   gap: 12px;
   animation: modalFadeIn 0.2s ease;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 /* Small fade-in animation */
