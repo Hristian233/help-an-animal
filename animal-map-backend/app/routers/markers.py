@@ -1,16 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app import crud, schemas, models
 from sqlalchemy import func
 from geoalchemy2 import Geometry
 from sqlalchemy import cast
-from google.cloud import storage
-from datetime import timedelta
-import uuid
+from app.utils.image_validation import validate_uploaded_image
+import os
 
 
 router = APIRouter(prefix="/markers", tags=["markers"])
+BUCKET_NAME = "help-an-animal-images"
 
 def get_db():
     db = SessionLocal()
@@ -22,6 +22,13 @@ def get_db():
 
 @router.post("/")
 def create_marker(marker: schemas.MarkerCreate, db: Session = Depends(get_db)):
+
+    # file_name = os.path.basename(marker.image_url)
+
+    # ok, msg = validate_uploaded_image(BUCKET_NAME, file_name)
+    # if not ok:
+    #     raise HTTPException(status_code=400, detail=msg)
+
     db_marker = models.Marker(
         animal=marker.animal,
         note=marker.note,
