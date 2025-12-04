@@ -22,11 +22,10 @@ const defaultCenter = {
 type MarkerType = {
   id: string;
   animal: string;
-  note: string | null;
+  note: string;
   lat: number;
   lng: number;
-  image_url: string | null;
-  user_id: string | null;
+  image_url: string;
 };
 
 type NewMarkerCoords = {
@@ -142,6 +141,39 @@ function App() {
     );
   };
 
+  const handleSaveMarker = async (data: MarkerType) => {
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/markers`,
+        data
+      );
+
+      if (res.status >= 200 && res.status < 300) {
+        showToast(t("animalAdded"));
+        loadMarkers();
+        return true;
+      }
+    } catch (err: unknown) {
+      let message = "Unknown error";
+
+      // FastAPI HTTPException
+      if (err.response?.data?.detail) {
+        message = err.response.data.detail;
+      }
+      // Other backend errors
+      else if (err.response?.data) {
+        message = JSON.stringify(err.response.data);
+      }
+      // Network / axios errors
+      else if (err.message) {
+        message = err.message;
+      }
+
+      showToast(message);
+      return false; // indicate error
+    }
+  };
+
   if (!isLoaded) return <div>Loading map...</div>;
 
   return (
@@ -178,7 +210,7 @@ function App() {
           }
 
           setNewMarkerCoords({ lat: clickLat, lng: clickLng });
-          setIsPickingLocation(false); // exit picking mode
+          setIsPickingLocation(false);
         }}
       >
         {markers.map((m) => (
@@ -254,13 +286,7 @@ function App() {
           lat={newMarkerCoords.lat}
           lng={newMarkerCoords.lng}
           onClose={() => setNewMarkerCoords(null)}
-          onSave={async (data) => {
-            await axios.post(
-              `${import.meta.env.VITE_BACKEND_URL}/markers`,
-              data
-            );
-            loadMarkers();
-          }}
+          onSave={handleSaveMarker}
         />
       )}
     </>
