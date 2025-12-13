@@ -27,3 +27,8 @@ app.include_router(markers.router)
 @app.get("/")
 def root():
     return {"message": "Animal Map API is running!"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
