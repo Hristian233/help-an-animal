@@ -13,14 +13,11 @@ if not os.getenv("K_SERVICE"):
 # 2. Variable Retrieval
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL not found. Ensure it is set in .env.local (local) or Cloud Run Vars (prod).")
-
 # 3. Engine Setup
 # 'pool_pre_ping' is highly recommended for Cloud Run to handle 
 # database connections that might have timed out.
 engine = create_engine(
-    DATABASE_URL,
+    str(DATABASE_URL),
     echo=False,  # Set to True if you want to see SQL logs in your terminal
     pool_size=5,
     max_overflow=10,
