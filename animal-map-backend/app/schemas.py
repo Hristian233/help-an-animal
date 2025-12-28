@@ -18,4 +18,4 @@ class Marker(BaseModel):
     image_url: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
