@@ -1,37 +1,52 @@
 import os
-from dotenv import load_dotenv
+from urllib.parse import quote_plus
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from dotenv import load_dotenv
 
-# 1. Environment Detection
-# If K_SERVICE is NOT set, we are running locally.
-if not os.getenv("K_SERVICE"):
+IS_CLOUD_RUN = bool(os.getenv("K_SERVICE"))
+
+# Load local env file only when running locally
+if not IS_CLOUD_RUN:
     load_dotenv(".env.local")
-# If K_SERVICE IS set, we skip load_dotenv() because Cloud Run 
-# injects variables directly into the environment.
 
-# 2. Variable Retrieval
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# 3. Engine Setup
-# 'pool_pre_ping' is highly recommended for Cloud Run to handle 
-# database connections that might have timed out.
+user = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
+host = os.getenv("DB_HOST")
+port = os.getenv("DB_PORT")
+db_name = os.getenv("DB_NAME", "animal_map")
+instance = os.getenv("INSTANCE_CONNECTION_NAME")
+
+safe_password = quote_plus(password) if password else ""
+
+if IS_CLOUD_RUN:
+    if not all([user, password, instance, db_name]):
+        raise RuntimeError("Missing DB env vars in Cloud Run")
+
+    DATABASE_URL = (
+        f"postgresql+psycopg2://{user}:{safe_password}"
+        f"@/{db_name}?host=/cloudsql/{instance}"
+    )
+else:
+    if all([user, password, host, port]):
+        DATABASE_URL = (
+            f"postgresql+psycopg2://{user}:{safe_password}"
+            f"@{host}:{port}/{db_name}"
+        )
+    elif not DATABASE_URL:
+        raise RuntimeError("Missing DB env vars locally and no DATABASE_URL provided")
+
 engine = create_engine(
-    str(DATABASE_URL),
-    echo=False,  # Set to True if you want to see SQL logs in your terminal
-    pool_size=5,
-    max_overflow=10,
-    pool_pre_ping=True
+    DATABASE_URL,
+    pool_pre_ping=True,
 )
 
-# 4. Session and Base setup
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+)
 
-# 5. Dependency (Helper for FastAPI or scripts)
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+Base = declarative_base()
