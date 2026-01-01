@@ -8,6 +8,7 @@ import FabMenu from "./components/FabMenu";
 import type { Libraries } from "@react-google-maps/api";
 import { useToast } from "./hooks/useToast";
 import { useT } from "./hooks/useTranslation";
+import { API_URL } from "./config/env";
 
 const containerStyle = {
   width: "100vw",
@@ -79,9 +80,7 @@ function App() {
 
   const loadMarkers = useCallback(async () => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/markers/all`
-      );
+      const res = await axios.get(`${API_URL}/markers/all`);
       setMarkers(res.data);
     } catch (error) {
       console.error("Error loading markers:", error);
@@ -143,10 +142,7 @@ function App() {
 
   const handleSaveMarker = async (data: MarkerType) => {
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/markers`,
-        data
-      );
+      const res = await axios.post(`${API_URL}/markers`, data);
 
       if (res.status >= 200 && res.status < 300) {
         showToast(t("animalAdded"));
