@@ -12,6 +12,7 @@ app.include_router(upload.router, prefix="/files", tags=["files"])
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://animal-map-95a3a.web.app"
 ]
 
 app.add_middleware(
