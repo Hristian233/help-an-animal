@@ -5,7 +5,7 @@ from app import crud, schemas, models
 from sqlalchemy import func
 from geoalchemy2 import Geometry
 from sqlalchemy import cast
-from app.utils.image_validation import validate_uploaded_image
+# from app.utils.image_validation import validate_uploaded_image
 import os
 
 
