@@ -20,7 +20,7 @@ def get_db():
         db.close()
 
 
-@router.post("/")
+@router.post("")
 def create_marker(marker: schemas.MarkerCreate, db: Session = Depends(get_db)):
 
     # file_name = os.path.basename(marker.image_url)
