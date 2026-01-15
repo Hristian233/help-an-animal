@@ -81,13 +81,11 @@ def generate_upload_url():
 
     signing_creds = get_signing_credentials()
     credentials.refresh(google.auth.transport.requests.Request())
-     print("Using signer:", type(signing_creds))
-
     upload_url = blob.generate_signed_url(
         version="v4",
         expiration=datetime.timedelta(minutes=15),
         method="PUT",
-        content_type=content_type,
+        content_type="image/jpeg",
         access_token=credentials.token,
         service_account_email=credentials.service_account_email,
     )
