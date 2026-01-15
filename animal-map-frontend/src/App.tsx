@@ -29,6 +29,14 @@ type MarkerType = {
   image_url: string;
 };
 
+type MarkerPayload = {
+  animal: string;
+  note: string;
+  lat: number;
+  lng: number;
+  image_url: string | null;
+};
+
 type NewMarkerCoords = {
   lat: number;
   lng: number;
@@ -140,7 +148,7 @@ function App() {
     );
   };
 
-  const handleSaveMarker = async (data: MarkerType) => {
+  const handleSaveMarker = async (data: MarkerPayload) => {
     try {
       const res = await axios.post(`${API_URL}/markers`, data);
 
@@ -152,21 +160,25 @@ function App() {
     } catch (err: unknown) {
       let message = "Unknown error";
 
-      // FastAPI HTTPException
-      if (err.response?.data?.detail) {
-        message = err.response.data.detail;
-      }
-      // Other backend errors
-      else if (err.response?.data) {
-        message = JSON.stringify(err.response.data);
-      }
-      // Network / axios errors
-      else if (err.message) {
+      if (axios.isAxiosError(err)) {
+        // FastAPI HTTPException
+        if (err.response?.data?.detail) {
+          message = err.response.data.detail;
+        }
+        // Other backend errors
+        else if (err.response?.data) {
+          message = JSON.stringify(err.response.data);
+        }
+        // Axios message (network, timeout, etc.)
+        else if (err.message) {
+          message = err.message;
+        }
+      } else if (err instanceof Error) {
+        // Non-Axios JS errors
         message = err.message;
       }
 
       showToast(message);
-      return false; // indicate error
     }
   };
 
