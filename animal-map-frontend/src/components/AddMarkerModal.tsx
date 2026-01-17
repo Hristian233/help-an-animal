@@ -2,6 +2,7 @@ import "./AddMarkerModal.css";
 import { useState } from "react";
 import { API_URL } from "../config/env.js";
 import { useT } from "../hooks/useTranslation";
+import { useToast } from "../hooks/useToast.js";
 
 type AddMarkerModalProps = {
   lat: number;
@@ -27,6 +28,8 @@ export function AddMarkerModal({
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const t = useT();
+  const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
+  const { showToast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -50,7 +53,12 @@ export function AddMarkerModal({
         alert("Image upload failed. Try again.");
         return;
       }
+    } else {
+      showToast("Please select an image");
+      return;
     }
+
+    if (!image_url) return;
 
     onSave({
       animal,
@@ -65,13 +73,32 @@ export function AddMarkerModal({
   const uploadFileToGCS = async () => {
     if (!file) return null;
 
+    if (!file.type.startsWith("image/")) {
+      showToast("Only image files are allowed");
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      showToast("Image exceeds 10 MB limit");
+      return;
+    }
+
     // 1. Ask backend for signed URL
     const res = await fetch(`${API_URL}/files/upload-url`, {
-      method: "GET",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mime_type: file.type,
+        size: file.size,
+      }),
     });
 
     if (!res.ok) {
-      console.error("Failed to get signed URL");
+      const err = await res.json().catch(() => null);
+      console.error("Upload init failed", err?.detail);
+      showToast(err?.detail ?? "Failed to initialize upload");
       return null;
     }
 
