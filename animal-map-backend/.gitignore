@@ -17,3 +17,4 @@ Thumbs.db
 
 # Google Cloud Storage
 gcs-key.json
+gcs-signer-local.json
