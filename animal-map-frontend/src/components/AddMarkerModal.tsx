@@ -50,7 +50,7 @@ export function AddMarkerModal({
         image_url = await uploadFileToGCS();
       } catch (err) {
         console.error("Image upload failed", err);
-        alert("Image upload failed. Try again.");
+        showToast("Image upload failed. Try again.");
         return;
       }
     } else {
