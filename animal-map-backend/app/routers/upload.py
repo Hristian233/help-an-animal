@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from google.cloud import storage
 from google.auth import default
 from google.auth.transport.requests import Request
@@ -11,11 +11,19 @@ import google.auth
 import google.auth.transport.requests
 import uuid
 import os
+from pydantic import BaseModel
 
 router = APIRouter()
 
 BUCKET_NAME = "help-an-animal-images"
 SERVICE_ACCOUNT_FILE = os.getenv("GCS_KEY_FILE", "gcs-key.json")
+MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10 MB
+ALLOWED_MIME_PREFIX = "image/"
+
+
+class UploadInitRequest(BaseModel):
+    mime_type: str
+    size: int  # bytes
 
 
 def get_storage_client():
@@ -25,7 +33,6 @@ def get_storage_client():
     if not is_cloud_run and os.path.exists(SERVICE_ACCOUNT_FILE):
         return storage.Client.from_service_account_json(SERVICE_ACCOUNT_FILE)
 
-    # Cloud Run or local ADC
     return storage.Client()
 
 
@@ -45,49 +52,60 @@ def get_signing_credentials():
     return Signer(credentials, auth_request, email)
 
 
-# @router.get("/upload-url")
-# def generate_upload_url():
-#     client = get_storage_client()
-#     bucket = client.bucket(BUCKET_NAME)
+def validate_image_metadata(mime_type: str, size: int):
+    print(mime_type)
+    print(size)
+    if size <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file size",
+        )
 
-#     file_name = f"{uuid.uuid4()}.jpg"
-#     blob = bucket.blob(file_name)
+    if size > MAX_IMAGE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Image exceeds 10 MB limit",
+        )
 
-#     signing_creds = get_signing_credentials()
+    if not mime_type:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing MIME type",
+        )
 
-#     print("Using signer:", type(signing_creds))
-
-#     upload_url = blob.generate_signed_url(
-#         version="v4",
-#         expiration=timedelta(minutes=10),
-#         method="PUT",
-#         content_type="image/jpeg",
-#         credentials=signing_creds,
-#     )
-
-#     public_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{file_name}"
-
-#     return {"upload_url": upload_url, "public_url": public_url}
+    if not mime_type.startswith(ALLOWED_MIME_PREFIX):
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Only image uploads are allowed",
+        )
 
 
-@router.get("/upload-url")
-def generate_upload_url():
+@router.post("/upload-url")
+def generate_upload_url(payload: UploadInitRequest):
+
+    validate_image_metadata(
+        mime_type=payload.mime_type,
+        size=payload.size,
+    )
+
     client = get_storage_client()
     bucket = client.bucket(BUCKET_NAME)
+
     credentials, project_id = google.auth.default()
+    credentials.refresh(google.auth.transport.requests.Request())
 
     file_name = f"{uuid.uuid4()}.jpg"
     blob = bucket.blob(file_name)
 
     signing_creds = get_signing_credentials()
-    credentials.refresh(google.auth.transport.requests.Request())
     upload_url = blob.generate_signed_url(
         version="v4",
         expiration=datetime.timedelta(minutes=15),
         method="PUT",
         content_type="image/jpeg",
         access_token=credentials.token,
-        service_account_email=credentials.service_account_email,
+        # service_account_email=credentials.service_account_email,
+        service_account_email=signing_creds,
     )
 
     public_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{file_name}"
