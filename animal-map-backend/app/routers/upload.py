@@ -15,7 +15,8 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-BUCKET_NAME = "help-an-animal-images"
+INBOX_BUCKET = "help-an-animal-inbox"
+PUBLIC_BUCKET = "help-an-animal-images"
 SERVICE_ACCOUNT_FILE = os.getenv("GCS_KEY_FILE", "gcs-key.json")
 MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10 MB
 ALLOWED_MIME_PREFIX = "image/"
@@ -89,12 +90,12 @@ def generate_upload_url(payload: UploadInitRequest):
     )
 
     client = get_storage_client()
-    bucket = client.bucket(BUCKET_NAME)
+    bucket = client.bucket(INBOX_BUCKET)
 
     credentials, project_id = google.auth.default()
     credentials.refresh(google.auth.transport.requests.Request())
 
-    file_name = f"{uuid.uuid4()}.jpg"
+    file_name = f"{uuid.uuid4()}"
     blob = bucket.blob(file_name)
 
     signing_creds = get_signing_credentials()
@@ -102,12 +103,12 @@ def generate_upload_url(payload: UploadInitRequest):
         version="v4",
         expiration=datetime.timedelta(minutes=15),
         method="PUT",
-        content_type="image/jpeg",
+        content_type=payload.mime_type,
         access_token=credentials.token,
-        # service_account_email=credentials.service_account_email,
-        service_account_email=signing_creds,
+        service_account_email=credentials.service_account_email,
+        # service_account_email=signing_creds,
     )
 
-    public_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{file_name}"
+    public_url = f"https://storage.googleapis.com/{PUBLIC_BUCKET}/{file_name}"
 
     return {"upload_url": upload_url, "public_url": public_url}
