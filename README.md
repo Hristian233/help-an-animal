@@ -25,17 +25,17 @@ The app focuses on visibility and coordination and is built with a scalable clou
 
 <h3>Image Processing</h3>
 
-Google Cloud Functions (2nd gen)
+    Google Cloud Functions (2nd gen)
 
-Eventarc (Cloud Storage triggers)
+    Eventarc (Cloud Storage triggers)
 
-Pillow for image validation, resizing, and format normalization
+    Pillow for image validation, resizing, and format normalization
 
-Two-bucket design:
+    Two-bucket design:
 
-Inbox bucket for raw uploads
+    Inbox bucket for raw uploads
 
-Public bucket for optimized images
+    Public bucket for optimized images
 
 <h3>Database</h3>
 
