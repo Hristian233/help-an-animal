@@ -1,7 +1,10 @@
 [
   {
-    "origin": ["http://localhost:5173", "https://your-production-domain.com"],
-    "method": ["PUT", "POST", "GET"],
+    "origin": [
+      "https://animal-map-95a3a.web.app",
+      "http://localhost:5173"
+    ],
+    "method": ["PUT"],
     "responseHeader": ["Content-Type"],
     "maxAgeSeconds": 3600
   }
