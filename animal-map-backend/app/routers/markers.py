@@ -45,18 +45,6 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/")
-def get_markers(
-    min_lat: float,
-    max_lat: float,
-    min_lng: float,
-    max_lng: float,
-    db: Session = Depends(get_db),
-):
-    markers = crud.get_markers_in_bounds(db, min_lat, max_lat, min_lng, max_lng)
-    return markers
-
-
 @router.get("/all", response_model=list[schemas.Marker])
 def get_all_markers(db: Session = Depends(get_db)):
     rows = db.query(
