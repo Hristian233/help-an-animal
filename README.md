@@ -1,29 +1,29 @@
-🐾 Animal Map
+<h1>🐾 Animal Map</h1>
 
 Animal Map is a community-driven web application that helps people locate and feed homeless animals by sharing their location on an interactive map. Users can add map markers with a short description and an image, making it easier for volunteers and animal lovers to coordinate, bring food and water, and care for animals in public areas.
 
 The app focuses on visibility and coordination and is built with a scalable cloud architecture for fast and reliable image uploads.
 
-🛠️ Tech Stack
-Frontend
+<h2>🛠️ Tech Stack</h2>
+<h3>Frontend</h3>
 
-React + TypeScript
+    React + TypeScript
 
-Vite
+    Vite
 
-Google Maps JavaScript API
+    Google Maps JavaScript API
 
-Hosted on Firebase Hosting
+    Hosted on Firebase Hosting
 
-Backend API
+<h3>Backend API</h3>
 
-Python (FastAPI)
+    Python (FastAPI)
 
-Deployed on Google Cloud Run
+    Deployed on Google Cloud Run
 
-Generates IAM-signed URLs for secure image uploads
+    Generates IAM-signed URLs for secure image uploads
 
-Image Processing
+<h3>Image Processing</h3>
 
 Google Cloud Functions (2nd gen)
 
@@ -37,16 +37,16 @@ Inbox bucket for raw uploads
 
 Public bucket for optimized images
 
-Database
+<h3>Database</h3>
 
-PostgreSQL (Cloud SQL)
+    PostgreSQL (Cloud SQL)
 
-Cloud & Infrastructure
+<h3>Cloud & Infrastructure</h3>
 
-Google Cloud Platform (GCP)
+    Google Cloud Platform (GCP)
 
-Cloud Storage
+    Cloud Storage
 
-IAM & Service Accounts
+    IAM & Service Accounts
 
-Environment-aware configuration (local vs production)
+    Environment-aware configuration (local vs production)
