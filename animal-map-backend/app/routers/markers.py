@@ -5,12 +5,14 @@ from app import crud, schemas, models
 from sqlalchemy import func
 from geoalchemy2 import Geometry
 from sqlalchemy import cast
+
 # from app.utils.image_validation import validate_uploaded_image
 import os
 
 
 router = APIRouter(prefix="/markers", tags=["markers"])
-BUCKET_NAME = "help-an-animal-images"
+BUCKET_NAME = "help-an-animal-inbox"
+
 
 def get_db():
     db = SessionLocal()
@@ -22,13 +24,6 @@ def get_db():
 
 @router.post("")
 def create_marker(marker: schemas.MarkerCreate, db: Session = Depends(get_db)):
-
-    # file_name = os.path.basename(marker.image_url)
-
-    # ok, msg = validate_uploaded_image(BUCKET_NAME, file_name)
-    # if not ok:
-    #     raise HTTPException(status_code=400, detail=msg)
-
     db_marker = models.Marker(
         animal=marker.animal,
         note=marker.note,
@@ -46,9 +41,8 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = Depends(get_db)):
         "note": db_marker.note,
         "lat": marker.lat,
         "lng": marker.lng,
-        "image_url": db_marker.image_url
+        "image_url": db_marker.image_url,
     }
-
 
 
 @router.get("/")
@@ -57,10 +51,11 @@ def get_markers(
     max_lat: float,
     min_lng: float,
     max_lng: float,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     markers = crud.get_markers_in_bounds(db, min_lat, max_lat, min_lng, max_lng)
     return markers
+
 
 @router.get("/all", response_model=list[schemas.Marker])
 def get_all_markers(db: Session = Depends(get_db)):
@@ -69,8 +64,8 @@ def get_all_markers(db: Session = Depends(get_db)):
         models.Marker.animal,
         models.Marker.note,
         func.ST_Y(cast(models.Marker.location, Geometry)).label("lat"),
-        func.ST_X(cast(models.Marker.location, Geometry)).label("lng"), 
-        models.Marker.image_url
+        func.ST_X(cast(models.Marker.location, Geometry)).label("lng"),
+        models.Marker.image_url,
     ).all()
 
     return [
@@ -80,7 +75,7 @@ def get_all_markers(db: Session = Depends(get_db)):
             "note": r.note,
             "lat": r.lat,
             "lng": r.lng,
-            "image_url": r.image_url
+            "image_url": r.image_url,
         }
         for r in rows
     ]
