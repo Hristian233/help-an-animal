@@ -1,6 +1,6 @@
 import "./AddMarkerModal.css";
 import { useState } from "react";
-import { API_URL } from "../config/env.js";
+import { API_URL, IS_PRODUCTION } from "../config/env.js";
 import { useT } from "../hooks/useTranslation";
 import { useToast } from "../hooks/useToast.js";
 
@@ -104,18 +104,20 @@ export function AddMarkerModal({
 
     const { upload_url, public_url } = await res.json();
 
-    // 2. Upload file directly to GCS
-    const uploadRes = await fetch(upload_url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type,
-      },
-      body: file,
-    });
+    if (IS_PRODUCTION) {
+      // 2. Upload file directly to GCS
+      const uploadRes = await fetch(upload_url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+        },
+        body: file,
+      });
 
-    if (!uploadRes.ok) {
-      console.error("Upload to GCS failed");
-      return null;
+      if (!uploadRes.ok) {
+        console.error("Upload to GCS failed");
+        return null;
+      }
     }
 
     // Return final public URL (used in POST /markers)

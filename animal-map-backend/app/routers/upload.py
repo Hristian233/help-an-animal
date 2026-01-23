@@ -20,6 +20,7 @@ PUBLIC_BUCKET = "help-an-animal-images"
 SERVICE_ACCOUNT_FILE = os.getenv("GCS_KEY_FILE", "gcs-key.json")
 MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10 MB
 ALLOWED_MIME_PREFIX = "image/"
+IS_CLOUD_RUN = bool(os.getenv("K_SERVICE"))
 
 
 class UploadInitRequest(BaseModel):
@@ -28,10 +29,10 @@ class UploadInitRequest(BaseModel):
 
 
 def get_storage_client():
-    is_cloud_run = bool(os.getenv("K_SERVICE"))
+    IS_CLOUD_RUN = bool(os.getenv("K_SERVICE"))
 
     # Local: use JSON key if present
-    if not is_cloud_run and os.path.exists(SERVICE_ACCOUNT_FILE):
+    if not IS_CLOUD_RUN and os.path.exists(SERVICE_ACCOUNT_FILE):
         return storage.Client.from_service_account_json(SERVICE_ACCOUNT_FILE)
 
     return storage.Client()
@@ -88,6 +89,11 @@ def generate_upload_url(payload: UploadInitRequest):
         mime_type=payload.mime_type,
         size=payload.size,
     )
+    file_name = f"{uuid.uuid4()}"
+
+    if not IS_CLOUD_RUN:
+        # LOCAL: no signed URL, return a dummy / direct upload path
+        return {"upload_url": None, "public_url": f"/mock/{file_name}"}
 
     client = get_storage_client()
     bucket = client.bucket(INBOX_BUCKET)
@@ -95,7 +101,6 @@ def generate_upload_url(payload: UploadInitRequest):
     credentials, project_id = google.auth.default()
     credentials.refresh(google.auth.transport.requests.Request())
 
-    file_name = f"{uuid.uuid4()}"
     blob = bucket.blob(file_name)
 
     signing_creds = get_signing_credentials()
