@@ -244,6 +244,7 @@ button:focus-visible {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-bottom: 14px;
 }
 
 .fab-button.small {
