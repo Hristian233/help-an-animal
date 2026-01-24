@@ -54,6 +54,7 @@ function App() {
   } | null>(null);
   const [isPickingLocation, setIsPickingLocation] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [isLoadingMarkers, setIsLoadingMarkers] = useState(true);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -82,16 +83,20 @@ function App() {
         }
       },
       () => alert("Unable to get your GPS location."),
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true },
     );
   };
 
   const loadMarkers = useCallback(async () => {
+    setIsLoadingMarkers(true);
+
     try {
       const res = await axios.get(`${API_URL}/markers/all`);
       setMarkers(res.data);
     } catch (error) {
       console.error("Error loading markers:", error);
+    } finally {
+      setIsLoadingMarkers(false);
     }
   }, []);
 
@@ -112,7 +117,7 @@ function App() {
         map?.panTo({ lat, lng });
         if ((map?.getZoom() ?? 0) < 14) map?.setZoom(15);
       },
-      () => alert("Cannot get your location.")
+      () => alert("Cannot get your location."),
     );
   };
 
@@ -144,7 +149,7 @@ function App() {
       },
       () => {
         alert("Location is required to check nearby animals.");
-      }
+      },
     );
   };
 
@@ -209,7 +214,7 @@ function App() {
           const distance =
             google.maps.geometry.spherical.computeDistanceBetween(
               new google.maps.LatLng(userLocation.lat, userLocation.lng),
-              new google.maps.LatLng(clickLat, clickLng)
+              new google.maps.LatLng(clickLat, clickLng),
             );
 
           if (distance > 100) {
@@ -221,29 +226,37 @@ function App() {
           setIsPickingLocation(false);
         }}
       >
-        {markers.map((m) => (
-          <Marker
-            key={m.id}
-            position={{ lat: m.lat, lng: m.lng }}
-            draggable={true}
-            onDragEnd={(e) => {
-              setNewMarkerCoords({
-                lat: e.latLng!.lat(),
-                lng: e.latLng!.lng(),
-              });
-            }}
-            icon={
-              isLoaded
-                ? {
-                    url: animalIcons[m.animal] ?? "/icons/default.png",
-                    scaledSize: new window.google.maps.Size(40, 40),
-                    anchor: new window.google.maps.Point(20, 20),
-                  }
-                : undefined
-            }
-            onClick={() => setSelectedMarker(m)}
-          />
-        ))}
+        {isLoadingMarkers && (
+          <div className="map-loading">
+            <div className="spinner" />
+            <p>Зареждане...</p>
+          </div>
+        )}
+
+        {!isLoadingMarkers &&
+          markers.map((m) => (
+            <Marker
+              key={m.id}
+              position={{ lat: m.lat, lng: m.lng }}
+              draggable={true}
+              onDragEnd={(e) => {
+                setNewMarkerCoords({
+                  lat: e.latLng!.lat(),
+                  lng: e.latLng!.lng(),
+                });
+              }}
+              icon={
+                isLoaded
+                  ? {
+                      url: animalIcons[m.animal] ?? "/icons/default.png",
+                      scaledSize: new window.google.maps.Size(40, 40),
+                      anchor: new window.google.maps.Point(20, 20),
+                    }
+                  : undefined
+              }
+              onClick={() => setSelectedMarker(m)}
+            />
+          ))}
 
         {/* Popup for viewing details */}
         {selectedMarker && (
