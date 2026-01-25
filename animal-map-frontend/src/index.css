@@ -183,6 +183,16 @@ button:focus-visible {
   background-color: #d1d5db;
 }
 
+.modal-btn:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-btn:disabled:hover {
+  background: inherit;
+}
+
 .modal-file-input {
   position: relative;
   padding: 10px 16px;

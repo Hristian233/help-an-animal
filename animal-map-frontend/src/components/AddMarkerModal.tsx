@@ -23,7 +23,7 @@ export function AddMarkerModal({
   onClose,
   onSave,
 }: AddMarkerModalProps) {
-  const [animal, setAnimal] = useState("fox");
+  const [animal, setAnimal] = useState("");
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -124,6 +124,8 @@ export function AddMarkerModal({
     return public_url;
   };
 
+  const isFormValid = animal !== "" && note.trim() !== "" && !!preview;
+
   return (
     <>
       <div className="modal-overlay" onClick={onClose}></div>
@@ -141,6 +143,7 @@ export function AddMarkerModal({
           value={animal}
           onChange={(e) => setAnimal(e.target.value)}
         >
+          <option value="" disabled hidden></option>
           <option value="fox">{t("animals.fox")}</option>
           <option value="dog">{t("animals.dog")}</option>
           <option value="cat">{t("animals.cat")}</option>
@@ -170,7 +173,11 @@ export function AddMarkerModal({
         )}
 
         <div className="modal-actions">
-          <button className="modal-btn save" onClick={handleSubmit}>
+          <button
+            className="modal-btn save"
+            onClick={handleSubmit}
+            disabled={!isFormValid}
+          >
             {t("modal.save")}
           </button>
           <button className="modal-btn cancel" onClick={onClose}>
