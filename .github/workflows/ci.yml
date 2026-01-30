@@ -70,7 +70,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github/providers/github
+          workload_identity_provider: projects/603123832074/locations/global/workloadIdentityPools/github/providers/github
           service_account: help-an-animal-uploader@animal-map-478820.iam.gserviceaccount.com
 
       - name: Set up gcloud
@@ -85,3 +85,29 @@ jobs:
             --service-account help-an-animal-uploader@animal-map-478820.iam.gserviceaccount.com \
             --add-cloudsql-instances rescue-sheets:europe-central2:rescue-cards-db \
             --set-env-vars ENV=production,DB_USER=animal_app_user,DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_NAME=animal_map,INSTANCE_CONNECTION_NAME=rescue-sheets:europe-central2:rescue-cards-db
+
+  deploy-frontend:
+    needs: frontend # Only deploy if tests/build pass
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          cd animal-map-frontend
+          npm ci
+
+      - name: Build
+        run: |
+          cd animal-map-frontend
+          npm run build
+
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANIMAL_MAP_95A3A }}"
+          channelId: live
+          projectId: animal-map-95a3a
