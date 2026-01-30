@@ -229,7 +229,7 @@ function App() {
         {isLoadingMarkers && (
           <div className="map-loading">
             <div className="spinner" />
-            <p>Зареждане...</p>
+            <p style={{ color: "rgb(33, 53, 71)" }}>Зареждане...</p>
           </div>
         )}
 
@@ -267,13 +267,29 @@ function App() {
             }}
             onCloseClick={() => setSelectedMarker(null)}
           >
-            <div style={{ width: "200px" }}>
+            <div
+              style={{
+                width: "200px",
+                minHeight: "150px",
+                overflow: "visible",
+                color: "#000",
+              }}
+            >
               <img
                 src={selectedMarker.image_url ?? ""}
                 alt="animal"
-                style={{ width: "100%", borderRadius: "8px" }}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  minHeight: "100px",
+                  borderRadius: "8px",
+                  display: "block",
+                  marginBottom: "8px",
+                }}
               />
-              <h4>{selectedMarker.animal.toUpperCase()}</h4>
+              <h4 style={{ margin: "8px 0 4px 0" }}>
+                {selectedMarker.animal.toUpperCase()}
+              </h4>
               <p>{selectedMarker.note}</p>
             </div>
           </InfoWindow>

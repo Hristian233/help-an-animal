@@ -341,3 +341,16 @@ button:focus-visible {
     transform: rotate(360deg);
   }
 }
+
+/* Target the Google Maps Close Button Span */
+.gm-ui-hover-effect span {
+  /* iOS requires the Webkit prefix to render the mask correctly */
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+
+  /* Ensure there is a background color to 'mask' through */
+  background-color: #000000 !important;
+
+  /* Sometimes iOS needs a nudge to display block-level masks */
+  display: block !important;
+}
