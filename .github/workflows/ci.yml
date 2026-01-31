@@ -30,15 +30,14 @@ jobs:
 
       - name: Run backend tests
         env:
-          DB_USER: test_user
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: test_db
-          INSTANCE_CONNECTION_NAME: test_connection
-          ENV: testing
-          PYTHONPATH: animal-map-backend
+          DB_USER: mock_user
+          DB_PASSWORD: mock_password
+          DB_NAME: mock_db
+          INSTANCE_CONNECTION_NAME: mock_connection
+          PYTHONPATH: ${{ github.workspace }}/animal-map-backend
         run: |
           cd animal-map-backend
-          pytest
+          python -m pytest
 
   frontend:
     runs-on: ubuntu-latest
