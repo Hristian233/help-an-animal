@@ -30,7 +30,11 @@ jobs:
 
       - name: Run backend tests
         env:
-          # This ensures Python can find your modules inside the subfolder
+          DB_USER: test_user
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: test_db
+          INSTANCE_CONNECTION_NAME: test_connection
+          ENV: testing
           PYTHONPATH: animal-map-backend
         run: |
           cd animal-map-backend
