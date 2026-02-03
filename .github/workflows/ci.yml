@@ -19,7 +19,6 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
-          # This tells the cache where to look for your dependencies
           cache-dependency-path: animal-map-backend/requirements.txt
 
       - name: Install backend dependencies
@@ -52,6 +51,7 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
+          cache-dependency-path: animal-map-frontend/package-lock.json
 
       - name: Install frontend dependencies
         run: |
