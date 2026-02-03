@@ -116,3 +116,4 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANIMAL_MAP_95A3A }}"
           channelId: live
           projectId: animal-map-95a3a
+          entryPoint: animal-map-frontend
