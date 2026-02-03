@@ -33,7 +33,7 @@ jobs:
           DB_USER: mock_user
           DB_PASSWORD: mock_password
           DB_NAME: mock_db
-          DATABASE_URL: sqlite:///./test.db
+          DATABASE_URL: mock_db
           INSTANCE_CONNECTION_NAME: mock_connection
           PYTHONPATH: ${{ github.workspace }}/animal-map-backend
         run: |
