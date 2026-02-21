@@ -90,7 +90,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: projects/YOUR_PROJECT_NUMBER/locations/global/workloadIdentityPools/github/providers/github
+          workload_identity_provider: projects/603123832074/locations/global/workloadIdentityPools/github/providers/github
           service_account: help-an-animal-uploader@animal-map-478820.iam.gserviceaccount.com
 
       - name: Set up gcloud
