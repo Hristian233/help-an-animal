@@ -10,6 +10,20 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: mock_user
+          POSTGRES_PASSWORD: mock_password
+          POSTGRES_DB: mock_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mock_user -d mock_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,7 +46,8 @@ jobs:
           DB_USER: mock_user
           DB_PASSWORD: mock_password
           DB_NAME: mock_db
-          DATABASE_URL: mock_db
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
           INSTANCE_CONNECTION_NAME: mock_connection
           PYTHONPATH: ${{ github.workspace }}/animal-map-backend
         run: |
