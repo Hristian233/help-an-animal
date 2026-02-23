@@ -20,8 +20,11 @@ def get_db():
         db.close()
 
 
+get_db_dep = Depends(get_db)
+
+
 @router.post("")
-def create_marker(marker: schemas.MarkerCreate, db: Session = Depends(get_db)):
+def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
     db_marker = models.Marker(
         animal=marker.animal,
         note=marker.note,
@@ -44,7 +47,7 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/all", response_model=list[schemas.Marker])
-def get_all_markers(db: Session = Depends(get_db)):
+def get_all_markers(db: Session = get_db_dep):
     rows = db.query(
         models.Marker.id,
         models.Marker.animal,

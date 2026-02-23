@@ -18,8 +18,10 @@ def create_marker(db: Session, marker: schemas.MarkerCreate):
 
 
 def get_markers_in_bounds(db: Session, min_lat, max_lat, min_lng, max_lng):
+    polygon = (
+        f"POLYGON(({min_lng} {min_lat}, {min_lng} {max_lat}, "
+        f"{max_lng} {max_lat}, {max_lng} {min_lat}, {min_lng} {min_lat}))"
+    )
     return db.query(models.Marker).filter(
-        models.Marker.location.ST_Within(
-            f"POLYGON(({min_lng} {min_lat}, {min_lng} {max_lat}, {max_lng} {max_lat}, {max_lng} {min_lat}, {min_lng} {min_lat}))"
-        )
+        models.Marker.location.ST_Within(polygon)
     )

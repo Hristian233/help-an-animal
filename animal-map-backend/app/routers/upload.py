@@ -102,7 +102,6 @@ def generate_upload_url(payload: UploadInitRequest):
 
     blob = bucket.blob(file_name)
 
-    signing_creds = get_signing_credentials()
     upload_url = blob.generate_signed_url(
         version="v4",
         expiration=datetime.timedelta(minutes=15),
