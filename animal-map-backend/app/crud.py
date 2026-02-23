@@ -1,15 +1,14 @@
-from sqlalchemy.orm import Session
 from geoalchemy2.elements import WKTElement
+from sqlalchemy.orm import Session
+
 from app import models, schemas
+
 
 def create_marker(db: Session, marker: schemas.MarkerCreate):
     point = WKTElement(f"POINT({marker.lng} {marker.lat})", srid=4326)
 
     db_marker = models.Marker(
-        animal=marker.animal,
-        note=marker.note,
-        location=point,
-        image_url=marker.image_url
+        animal=marker.animal, note=marker.note, location=point, image_url=marker.image_url
     )
 
     db.add(db_marker)

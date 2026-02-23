@@ -1,7 +1,8 @@
 from fastapi import FastAPI
-from app.routers import markers, upload
-from app.database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.database import Base, engine
+from app.routers import markers, upload
 
 Base.metadata.create_all(bind=engine)
 
@@ -9,11 +10,7 @@ app = FastAPI()
 
 app.include_router(upload.router, prefix="/files", tags=["files"])
 
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://animal-map-95a3a.web.app"
-]
+origins = ["http://localhost:5173", "http://127.0.0.1:5173", "https://animal-map-95a3a.web.app"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,11 +22,12 @@ app.add_middleware(
 
 app.include_router(markers.router)
 
+
 @app.get("/")
 def root():
     return {"message": "Animal Map API is running!"}
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
