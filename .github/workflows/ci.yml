@@ -59,6 +59,12 @@ jobs:
           cd animal-map-backend
           pip install -r requirements.txt
 
+      - name: Lint backend
+        run: |
+          pip install ruff
+          ruff check animal-map-backend
+          ruff format --check animal-map-backend
+
       - name: Run backend tests
         env:
           DB_USER: mock_user
@@ -92,6 +98,11 @@ jobs:
         run: |
           cd animal-map-frontend
           npm ci
+
+      - name: Lint frontend
+        run: |
+          cd animal-map-frontend
+          npm run lint
 
       - name: Build frontend
         run: |

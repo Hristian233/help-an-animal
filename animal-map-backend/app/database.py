@@ -1,8 +1,9 @@
 import os
 from urllib.parse import quote_plus
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 IS_CLOUD_RUN = bool(os.getenv("K_SERVICE"))
 
@@ -26,15 +27,11 @@ if IS_CLOUD_RUN:
         raise RuntimeError("Missing DB env vars in Cloud Run")
 
     DATABASE_URL = (
-        f"postgresql+psycopg2://{user}:{safe_password}"
-        f"@/{db_name}?host=/cloudsql/{instance}"
+        f"postgresql+psycopg2://{user}:{safe_password}@/{db_name}?host=/cloudsql/{instance}"
     )
 else:
     if all([user, password, host, port]):
-        DATABASE_URL = (
-            f"postgresql+psycopg2://{user}:{safe_password}"
-            f"@{host}:{port}/{db_name}"
-        )
+        DATABASE_URL = f"postgresql+psycopg2://{user}:{safe_password}@{host}:{port}/{db_name}"
     elif not DATABASE_URL:
         raise RuntimeError("Missing DB env vars locally and no DATABASE_URL provided")
 
