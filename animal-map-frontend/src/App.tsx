@@ -47,6 +47,7 @@ const libraries: Libraries = ["geometry"];
 function App() {
   const [markers, setMarkers] = useState<MarkerType[]>([]);
   const [selectedMarker, setSelectedMarker] = useState<MarkerType | null>(null);
+  const [markerToEdit, setMarkerToEdit] = useState<MarkerType | null>(null);
   const [newMarkerCoords, setNewMarkerCoords] = useState<NewMarkerCoords>(null);
   const [userLocation, setUserLocation] = useState<{
     lat: number;
@@ -153,13 +154,51 @@ function App() {
     );
   };
 
-  const handleSaveMarker = async (data: MarkerPayload) => {
+  const handleSaveMarker = async (
+    data: MarkerPayload,
+  ): Promise<boolean | void> => {
     try {
       const res = await axios.post(`${API_URL}/markers`, data);
 
       if (res.status >= 200 && res.status < 300) {
         showToast(t("animalAdded"));
         loadMarkers();
+        return true;
+      }
+    } catch (err: unknown) {
+      let message = "Unknown error";
+
+      if (axios.isAxiosError(err)) {
+        if (err.response?.data?.detail) {
+          message = err.response.data.detail;
+        } else if (err.response?.data) {
+          message = JSON.stringify(err.response.data);
+        } else if (err.message) {
+          message = err.message;
+        }
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      showToast(message);
+      return false;
+    }
+  };
+
+  const handleUpdateMarker = async (
+    markerId: string | number,
+    data: MarkerPayload,
+  ): Promise<boolean> => {
+    try {
+      const res = await axios.patch(
+        `${API_URL}/markers/${String(markerId)}`,
+        data,
+      );
+
+      if (res.status >= 200 && res.status < 300) {
+        showToast(t("animalUpdated"));
+        loadMarkers();
+        setMarkerToEdit(null);
         return true;
       }
     } catch (err: unknown) {
@@ -184,7 +223,9 @@ function App() {
       }
 
       showToast(message);
+      return false;
     }
+    return false;
   };
 
   if (!isLoaded) return <div>Loading map...</div>;
@@ -291,6 +332,26 @@ function App() {
                 {selectedMarker.animal.toUpperCase()}
               </h4>
               <p>{selectedMarker.note}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setMarkerToEdit(selectedMarker);
+                  setSelectedMarker(null);
+                }}
+                style={{
+                  marginTop: "8px",
+                  padding: "6px 12px",
+                  backgroundColor: "#4285F4",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  width: "100%",
+                  fontWeight: 500,
+                }}
+              >
+                {t("update")}
+              </button>
             </div>
           </InfoWindow>
         )}
@@ -324,6 +385,18 @@ function App() {
           lng={newMarkerCoords.lng}
           onClose={() => setNewMarkerCoords(null)}
           onSave={handleSaveMarker}
+        />
+      )}
+
+      {/* Modal for editing marker */}
+      {markerToEdit && (
+        <AddMarkerModal
+          lat={markerToEdit.lat}
+          lng={markerToEdit.lng}
+          onClose={() => setMarkerToEdit(null)}
+          onSave={handleSaveMarker}
+          initialMarker={markerToEdit}
+          onUpdate={handleUpdateMarker}
         />
       )}
     </>
