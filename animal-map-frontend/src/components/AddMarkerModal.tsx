@@ -1,8 +1,17 @@
 import "./AddMarkerModal.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { API_URL, IS_PRODUCTION } from "../config/env.js";
 import { useT } from "../hooks/useTranslation";
 import { useToast } from "../hooks/useToast.js";
+
+type MarkerData = {
+  id: string | number;
+  animal: string;
+  note: string;
+  lat: number;
+  lng: number;
+  image_url: string | null;
+};
 
 type AddMarkerModalProps = {
   lat: number;
@@ -14,7 +23,18 @@ type AddMarkerModalProps = {
     lat: number;
     lng: number;
     image_url: string | null;
-  }) => void;
+  }) => void | Promise<boolean | void>;
+  initialMarker?: MarkerData | null;
+  onUpdate?: (
+    markerId: string | number,
+    data: {
+      animal: string;
+      note: string;
+      lat: number;
+      lng: number;
+      image_url: string | null;
+    }
+  ) => void | Promise<boolean | void>;
 };
 
 export function AddMarkerModal({
@@ -22,11 +42,25 @@ export function AddMarkerModal({
   lng,
   onClose,
   onSave,
+  initialMarker,
+  onUpdate,
 }: AddMarkerModalProps) {
-  const [animal, setAnimal] = useState("");
-  const [note, setNote] = useState("");
+  const isEdit = Boolean(initialMarker);
+
+  const [animal, setAnimal] = useState(initialMarker?.animal ?? "");
+  const [note, setNote] = useState(initialMarker?.note ?? "");
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(
+    initialMarker?.image_url ?? null
+  );
+
+  useEffect(() => {
+    if (initialMarker) {
+      setAnimal(initialMarker.animal);
+      setNote(initialMarker.note);
+      setPreview(initialMarker.image_url || null);
+    }
+  }, [initialMarker]);
   const t = useT();
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
   const { showToast } = useToast();
@@ -43,9 +77,11 @@ export function AddMarkerModal({
   };
 
   const handleSubmit = async () => {
-    let image_url = null;
+    let image_url: string | null = null;
 
-    if (file) {
+    if (isEdit && initialMarker) {
+      image_url = initialMarker.image_url;
+    } else if (file) {
       try {
         image_url = await uploadFileToGCS();
       } catch (err) {
@@ -53,21 +89,25 @@ export function AddMarkerModal({
         showToast("Image upload failed. Try again.");
         return;
       }
+      if (!image_url) return;
     } else {
       showToast("Please select an image");
       return;
     }
 
-    if (!image_url) return;
-
-    onSave({
-      animal,
-      note,
-      lat,
-      lng,
-      image_url,
-    });
-    onClose();
+    if (isEdit && initialMarker && onUpdate) {
+      const ok = await onUpdate(initialMarker.id, {
+        animal,
+        note,
+        lat: initialMarker.lat,
+        lng: initialMarker.lng,
+        image_url,
+      });
+      if (ok !== false) onClose();
+    } else {
+      const ok = await onSave({ animal, note, lat, lng, image_url });
+      if (ok !== false) onClose();
+    }
   };
 
   const uploadFileToGCS = async () => {
@@ -124,7 +164,10 @@ export function AddMarkerModal({
     return public_url;
   };
 
-  const isFormValid = animal !== "" && note.trim() !== "" && !!preview;
+  const hasPreview = !!preview || !!(isEdit && initialMarker?.image_url);
+  const isFormValid = isEdit
+    ? animal !== "" && note.trim() !== ""
+    : animal !== "" && note.trim() !== "" && (hasPreview || !!file);
 
   return (
     <>
@@ -135,13 +178,16 @@ export function AddMarkerModal({
           ×
         </button>
 
-        <h3 className="modal-title">{t("modal.addAnimal")}</h3>
+        <h3 className="modal-title">
+          {isEdit ? t("editAnimal") : t("modal.addAnimal")}
+        </h3>
 
         <label className="modal-label">{t("modal.animalType")}</label>
         <select
           className="modal-select"
           value={animal}
           onChange={(e) => setAnimal(e.target.value)}
+          disabled={isEdit}
         >
           <option value="" disabled hidden></option>
           <option value="fox">{t("animals.fox")}</option>
@@ -156,17 +202,20 @@ export function AddMarkerModal({
           onChange={(e) => setNote(e.target.value)}
         />
 
-        <label className="modal-label">{t("modal.uploadImage")}</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="modal-file-input"
-        />
-
-        {preview && (
+        {!isEdit && (
+          <>
+            <label className="modal-label">{t("modal.uploadImage")}</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="modal-file-input"
+            />
+          </>
+        )}
+        {(preview || (isEdit && initialMarker?.image_url)) && (
           <img
-            src={preview}
+            src={preview || initialMarker?.image_url || ""}
             alt={t("modal.preview")}
             className="modal-preview"
           />
