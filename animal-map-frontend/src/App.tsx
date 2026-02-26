@@ -107,6 +107,15 @@ function App() {
     })();
   }, [loadMarkers]);
 
+  useEffect(() => {
+    if (selectedMarker) {
+      const id = setTimeout(() => {
+        (document.activeElement as HTMLElement)?.blur();
+      }, 0);
+      return () => clearTimeout(id);
+    }
+  }, [selectedMarker]);
+
   const centerOnMyLocation = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
