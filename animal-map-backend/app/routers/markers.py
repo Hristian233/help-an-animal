@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from app import models, schemas
 from app.database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException
@@ -43,6 +45,8 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
         "lat": marker.lat,
         "lng": marker.lng,
         "image_url": db_marker.image_url,
+        "created_at": db_marker.created_at.isoformat() if db_marker.created_at else None,
+        "updated_at": db_marker.updated_at.isoformat() if db_marker.updated_at else None,
     }
 
 
@@ -65,6 +69,7 @@ def update_marker(
     if payload.lat is not None and payload.lng is not None:
         db_marker.location = f"SRID=4326;POINT({payload.lng} {payload.lat})"
 
+    db_marker.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(db_marker)
 
@@ -89,6 +94,8 @@ def update_marker(
         "lat": lat or 0,
         "lng": lng or 0,
         "image_url": db_marker.image_url,
+        "created_at": db_marker.created_at.isoformat() if db_marker.created_at else None,
+        "updated_at": db_marker.updated_at.isoformat() if db_marker.updated_at else None,
     }
 
 
@@ -101,6 +108,8 @@ def get_all_markers(db: Session = get_db_dep):
         func.ST_Y(cast(models.Marker.location, Geometry)).label("lat"),
         func.ST_X(cast(models.Marker.location, Geometry)).label("lng"),
         models.Marker.image_url,
+        models.Marker.created_at,
+        models.Marker.updated_at,
     ).all()
 
     return [
@@ -111,6 +120,8 @@ def get_all_markers(db: Session = get_db_dep):
             "lat": r.lat,
             "lng": r.lng,
             "image_url": r.image_url,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "updated_at": r.updated_at.isoformat() if r.updated_at else None,
         }
         for r in rows
     ]

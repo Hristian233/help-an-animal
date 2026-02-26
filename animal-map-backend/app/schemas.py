@@ -24,6 +24,8 @@ class Marker(BaseModel):
     lat: float
     lng: float
     image_url: str | None
+    created_at: str | None = None
+    updated_at: str | None = None
 
     class Config:
         from_attributes = True
