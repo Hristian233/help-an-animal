@@ -20,7 +20,7 @@
   "editAnimal":"Редактирай животно","modal": {
     "addAnimal": "Добави животно",
     "animalType": "Вид животно",
-    "note": "Бележка",
+    "description": "Описание",
     "uploadImage": "Качи снимка",
     "preview": "Преглед",
     "save": "Запази",
