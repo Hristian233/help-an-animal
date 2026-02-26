@@ -33,7 +33,7 @@ type AddMarkerModalProps = {
       lat: number;
       lng: number;
       image_url: string | null;
-    }
+    },
   ) => void | Promise<boolean | void>;
 };
 
@@ -51,7 +51,7 @@ export function AddMarkerModal({
   const [note, setNote] = useState(initialMarker?.note ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(
-    initialMarker?.image_url ?? null
+    initialMarker?.image_url ?? null,
   );
 
   useEffect(() => {
@@ -195,7 +195,7 @@ export function AddMarkerModal({
           <option value="cat">{t("animals.cat")}</option>
         </select>
 
-        <label className="modal-label">{t("modal.note")}</label>
+        <label className="modal-label">{t("modal.description")}</label>
         <textarea
           className="modal-textarea"
           value={note}

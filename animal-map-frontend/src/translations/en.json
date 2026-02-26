@@ -17,7 +17,7 @@
   "modal": {
     "addAnimal": "Add Animal",
     "animalType": "Animal Type",
-    "note": "Note",
+    "description": "Description",
     "uploadImage": "Upload Image",
     "preview": "Preview",
     "save": "Save",
