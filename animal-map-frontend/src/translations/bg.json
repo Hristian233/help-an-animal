@@ -8,6 +8,8 @@
   "yourLocation": "Вашето местоположение",
   "loading": "Зареждане...",
   "errorLocation": "Неуспешно извличане на местоположение.",
+  "createdAt":"Създадено на",
+  "updatedAt":"Обновено на",
   "update":"Актуализирай",
   "addManually": "Добави ръчно",
   "buttons": {
