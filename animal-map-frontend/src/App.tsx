@@ -329,7 +329,7 @@ function App() {
                 }}
               />
               <h4 style={{ margin: "8px 0 4px 0" }}>
-                {selectedMarker.animal.toUpperCase()}
+                {t(`animals.${selectedMarker.animal}`)}
               </h4>
               <p>{selectedMarker.note}</p>
               <button
