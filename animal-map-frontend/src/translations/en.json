@@ -1,7 +1,7 @@
 {
   "addAnimal": "Add Animal",
   "clickWithin100m": "Click on the map within 100 meters of your location.",
-  "tooFar": "Point is too far. Must be within 100 meters.",
+  "tooFar": "You must be within 100 meters.",
   "animalAdded": "Animal added successfully!",
   "checkingNearby": "Checking nearby animals…",
   "nearbyAnimals": "Nearby Animals",
