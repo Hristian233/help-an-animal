@@ -27,6 +27,8 @@ type MarkerType = {
   lat: number;
   lng: number;
   image_url: string;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
 
 type MarkerPayload = {
@@ -44,15 +46,27 @@ type NewMarkerCoords = {
 
 const libraries: Libraries = ["geometry"];
 
+function formatDate(isoString: string): string {
+  const d = new Date(isoString);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = String(d.getFullYear()).slice(-2);
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${day}.${month}.${year}, ${hours}:${minutes}`;
+}
+
 function App() {
   const [markers, setMarkers] = useState<MarkerType[]>([]);
   const [selectedMarker, setSelectedMarker] = useState<MarkerType | null>(null);
+  const [markerToEdit, setMarkerToEdit] = useState<MarkerType | null>(null);
   const [newMarkerCoords, setNewMarkerCoords] = useState<NewMarkerCoords>(null);
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
   const [isPickingLocation, setIsPickingLocation] = useState(false);
+  const [isLocatingForEdit, setIsLocatingForEdit] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(true);
   const { isLoaded } = useJsApiLoader({
@@ -106,6 +120,15 @@ function App() {
     })();
   }, [loadMarkers]);
 
+  useEffect(() => {
+    if (selectedMarker) {
+      const id = setTimeout(() => {
+        (document.activeElement as HTMLElement)?.blur();
+      }, 0);
+      return () => clearTimeout(id);
+    }
+  }, [selectedMarker]);
+
   const centerOnMyLocation = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -153,13 +176,87 @@ function App() {
     );
   };
 
-  const handleSaveMarker = async (data: MarkerPayload) => {
+  const handleStartEditing = (marker: MarkerType) => {
+    if (!navigator.geolocation) {
+      showToast(t("errorLocation"));
+      return;
+    }
+
+    setIsLocatingForEdit(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const currentLat = pos.coords.latitude;
+        const currentLng = pos.coords.longitude;
+        setUserLocation({ lat: currentLat, lng: currentLng });
+
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          new google.maps.LatLng(currentLat, currentLng),
+          new google.maps.LatLng(marker.lat, marker.lng),
+        );
+
+        if (distance > 100) {
+          showToast(t("tooFar"));
+          setIsLocatingForEdit(false);
+          return;
+        }
+
+        setMarkerToEdit(marker);
+        setSelectedMarker(null);
+        setIsLocatingForEdit(false);
+      },
+      () => {
+        showToast(t("errorLocation"));
+        setIsLocatingForEdit(false);
+      },
+      { enableHighAccuracy: true },
+    );
+  };
+
+  const handleSaveMarker = async (
+    data: MarkerPayload,
+  ): Promise<boolean | void> => {
     try {
       const res = await axios.post(`${API_URL}/markers`, data);
 
       if (res.status >= 200 && res.status < 300) {
         showToast(t("animalAdded"));
         loadMarkers();
+        return true;
+      }
+    } catch (err: unknown) {
+      let message = "Unknown error";
+
+      if (axios.isAxiosError(err)) {
+        if (err.response?.data?.detail) {
+          message = err.response.data.detail;
+        } else if (err.response?.data) {
+          message = JSON.stringify(err.response.data);
+        } else if (err.message) {
+          message = err.message;
+        }
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      showToast(message);
+      return false;
+    }
+  };
+
+  const handleUpdateMarker = async (
+    markerId: string | number,
+    data: MarkerPayload,
+  ): Promise<boolean> => {
+    try {
+      const res = await axios.patch(
+        `${API_URL}/markers/${String(markerId)}`,
+        data,
+      );
+
+      if (res.status >= 200 && res.status < 300) {
+        showToast(t("animalUpdated"));
+        loadMarkers();
+        setMarkerToEdit(null);
         return true;
       }
     } catch (err: unknown) {
@@ -184,7 +281,9 @@ function App() {
       }
 
       showToast(message);
+      return false;
     }
+    return false;
   };
 
   if (!isLoaded) return <div>Loading map...</div>;
@@ -288,9 +387,64 @@ function App() {
                 }}
               />
               <h4 style={{ margin: "8px 0 4px 0" }}>
-                {selectedMarker.animal.toUpperCase()}
+                {t(`animals.${selectedMarker.animal}`)}
               </h4>
               <p>{selectedMarker.note}</p>
+              {selectedMarker.created_at && (
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#666",
+                    margin: "4px 0 0 0",
+                  }}
+                >
+                  {t("createdAt")}: {formatDate(selectedMarker.created_at)}
+                </p>
+              )}
+              {selectedMarker.updated_at && (
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#666",
+                    margin: "2px 0 0 0",
+                  }}
+                >
+                  {t("updatedAt")}: {formatDate(selectedMarker.updated_at)}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => handleStartEditing(selectedMarker)}
+                disabled={isLocatingForEdit}
+                style={{
+                  marginTop: "8px",
+                  padding: "6px 12px",
+                  backgroundColor: "#4285F4",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  width: "100%",
+                  fontWeight: 500,
+                  opacity: isLocatingForEdit ? 0.8 : 1,
+                }}
+              >
+                {isLocatingForEdit ? (
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "14px",
+                      height: "14px",
+                      border: "2px solid rgba(255,255,255,0.5)",
+                      borderTopColor: "#fff",
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite",
+                    }}
+                  />
+                ) : (
+                  t("update")
+                )}
+              </button>
             </div>
           </InfoWindow>
         )}
@@ -324,6 +478,18 @@ function App() {
           lng={newMarkerCoords.lng}
           onClose={() => setNewMarkerCoords(null)}
           onSave={handleSaveMarker}
+        />
+      )}
+
+      {/* Modal for editing marker */}
+      {markerToEdit && (
+        <AddMarkerModal
+          lat={markerToEdit.lat}
+          lng={markerToEdit.lng}
+          onClose={() => setMarkerToEdit(null)}
+          onSave={handleSaveMarker}
+          initialMarker={markerToEdit}
+          onUpdate={handleUpdateMarker}
         />
       )}
     </>
