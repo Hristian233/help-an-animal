@@ -66,6 +66,7 @@ function App() {
     lng: number;
   } | null>(null);
   const [isPickingLocation, setIsPickingLocation] = useState(false);
+  const [isLocatingForEdit, setIsLocatingForEdit] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(true);
   const { isLoaded } = useJsApiLoader({
@@ -172,6 +173,42 @@ function App() {
       () => {
         alert("Location is required to check nearby animals.");
       },
+    );
+  };
+
+  const handleStartEditing = (marker: MarkerType) => {
+    if (!navigator.geolocation) {
+      showToast(t("errorLocation"));
+      return;
+    }
+
+    setIsLocatingForEdit(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const currentLat = pos.coords.latitude;
+        const currentLng = pos.coords.longitude;
+        setUserLocation({ lat: currentLat, lng: currentLng });
+
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          new google.maps.LatLng(currentLat, currentLng),
+          new google.maps.LatLng(marker.lat, marker.lng),
+        );
+
+        if (distance > 100) {
+          showToast(t("tooFar"));
+          setIsLocatingForEdit(false);
+          return;
+        }
+
+        setMarkerToEdit(marker);
+        setSelectedMarker(null);
+        setIsLocatingForEdit(false);
+      },
+      () => {
+        showToast(t("errorLocation"));
+        setIsLocatingForEdit(false);
+      },
+      { enableHighAccuracy: true },
     );
   };
 
@@ -354,21 +391,31 @@ function App() {
               </h4>
               <p>{selectedMarker.note}</p>
               {selectedMarker.created_at && (
-                <p style={{ fontSize: "12px", color: "#666", margin: "4px 0 0 0" }}>
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#666",
+                    margin: "4px 0 0 0",
+                  }}
+                >
                   {t("createdAt")}: {formatDate(selectedMarker.created_at)}
                 </p>
               )}
               {selectedMarker.updated_at && (
-                <p style={{ fontSize: "12px", color: "#666", margin: "2px 0 0 0" }}>
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#666",
+                    margin: "2px 0 0 0",
+                  }}
+                >
                   {t("updatedAt")}: {formatDate(selectedMarker.updated_at)}
                 </p>
               )}
               <button
                 type="button"
-                onClick={() => {
-                  setMarkerToEdit(selectedMarker);
-                  setSelectedMarker(null);
-                }}
+                onClick={() => handleStartEditing(selectedMarker)}
+                disabled={isLocatingForEdit}
                 style={{
                   marginTop: "8px",
                   padding: "6px 12px",
@@ -379,9 +426,24 @@ function App() {
                   cursor: "pointer",
                   width: "100%",
                   fontWeight: 500,
+                  opacity: isLocatingForEdit ? 0.8 : 1,
                 }}
               >
-                {t("update")}
+                {isLocatingForEdit ? (
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "14px",
+                      height: "14px",
+                      border: "2px solid rgba(255,255,255,0.5)",
+                      borderTopColor: "#fff",
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite",
+                    }}
+                  />
+                ) : (
+                  t("update")
+                )}
               </button>
             </div>
           </InfoWindow>
