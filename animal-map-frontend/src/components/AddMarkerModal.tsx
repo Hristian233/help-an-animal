@@ -1,5 +1,5 @@
 import "./AddMarkerModal.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { API_URL, IS_PRODUCTION } from "../config/env.js";
 import { useT } from "../hooks/useTranslation";
 import { useToast } from "../hooks/useToast.js";
@@ -54,13 +54,6 @@ export function AddMarkerModal({
     initialMarker?.image_url ?? null,
   );
 
-  useEffect(() => {
-    if (initialMarker) {
-      setAnimal(initialMarker.animal);
-      setNote(initialMarker.note);
-      setPreview(initialMarker.image_url || null);
-    }
-  }, [initialMarker]);
   const t = useT();
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
   const { showToast } = useToast();

@@ -69,7 +69,7 @@ def update_marker(
     if payload.lat is not None and payload.lng is not None:
         db_marker.location = f"SRID=4326;POINT({payload.lng} {payload.lat})"
 
-    db_marker.updated_at = datetime.now(timezone.utc)
+    db_marker.updated_at = datetime.now(timezone.utc)  # noqa: UP017
     db.commit()
     db.refresh(db_marker)
 
