@@ -74,9 +74,10 @@ jobs:
           DB_PORT: 5432
           INSTANCE_CONNECTION_NAME: mock_connection
           PYTHONPATH: ${{ github.workspace }}/animal-map-backend
+          TESTING: "1"
         run: |
           cd animal-map-backend
-          python -m pytest
+          python -m pytest -v
 
   frontend:
     needs: changes
