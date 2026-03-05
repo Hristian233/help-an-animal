@@ -104,6 +104,11 @@ jobs:
           cd animal-map-frontend
           npm run lint
 
+      - name: Test frontend
+        run: |
+          cd animal-map-frontend
+          npm run test
+
       - name: Build frontend
         run: |
           cd animal-map-frontend
