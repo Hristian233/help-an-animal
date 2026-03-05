@@ -76,7 +76,7 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/animal-map-backend
         run: |
           cd animal-map-backend
-          python -m pytest
+          python -m pytest -v
 
   frontend:
     needs: changes
