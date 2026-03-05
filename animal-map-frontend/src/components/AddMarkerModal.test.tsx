@@ -134,7 +134,7 @@ describe("AddMarkerModal", () => {
     await user.type(screen.getByRole("textbox"), "A fox");
     const fileInput = document.querySelector('input[type="file"]');
     expect(fileInput).toBeInTheDocument();
-    await user.upload(fileInput!, file);
+    await user.upload(fileInput as HTMLInputElement, file);
     await user.click(screen.getByRole("button", { name: /запази/i }));
 
     await vi.waitFor(() => {
@@ -161,8 +161,8 @@ describe("AddMarkerModal", () => {
       screen.getByRole("option", { name: "Лисица" }),
     );
     await user.type(screen.getByRole("textbox"), "Note");
-    const fileInput = document.querySelector('input[type="file"]');
-    await user.upload(fileInput!, largeFile);
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(fileInput, largeFile);
     await user.click(screen.getByRole("button", { name: /запази/i }));
 
     await vi.waitFor(() => {
