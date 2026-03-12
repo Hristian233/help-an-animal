@@ -12,6 +12,8 @@ google-api-core==2.28.1
 google-auth==2.43.0
 google-cloud-core==2.5.0
 google-cloud-storage==3.6.0
+google-cloud-translate==3.14.0
+google-cloud-vision==3.7.2
 google-crc32c==1.7.1
 google-resumable-media==2.8.0
 googleapis-common-protos==1.72.0
