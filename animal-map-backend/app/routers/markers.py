@@ -2,12 +2,11 @@ from datetime import datetime, timezone
 
 from app import models, schemas
 from app.database import SessionLocal
+from app.validation import validate_animal_image, validate_description
 from fastapi import APIRouter, Depends, HTTPException
 from geoalchemy2 import Geometry
 from sqlalchemy import cast, func
 from sqlalchemy.orm import Session
-
-# from app.utils.image_validation import validate_uploaded_image
 
 
 router = APIRouter(prefix="/markers", tags=["markers"])
@@ -27,6 +26,14 @@ get_db_dep = Depends(get_db)
 
 @router.post("")
 def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
+    # Validate image if provided
+    if marker.image_url:
+        validate_animal_image(marker.image_url)
+    
+    # Validate description if provided
+    validate_description(marker.note, marker.animal)
+    
+    # Only create marker if validation passes
     db_marker = models.Marker(
         animal=marker.animal,
         note=marker.note,
