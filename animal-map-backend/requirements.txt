@@ -13,6 +13,7 @@ google-auth==2.43.0
 google-cloud-core==2.5.0
 google-cloud-storage==3.6.0
 google-crc32c==1.7.1
+google-generativeai==0.8.3
 google-resumable-media==2.8.0
 googleapis-common-protos==1.72.0
 greenlet==3.2.4
@@ -32,6 +33,7 @@ pyasn1_modules==0.4.2
 pydantic==2.12.4
 pydantic_core==2.41.5
 Pygments==2.19.2
+Pillow==11.0.0
 pytest==9.0.2
 python-dotenv==1.2.1
 python-magic==0.4.27

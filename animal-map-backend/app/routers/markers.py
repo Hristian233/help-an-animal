@@ -2,12 +2,11 @@ from datetime import datetime, timezone
 
 from app import models, schemas
 from app.database import SessionLocal
+from app.services.gemini_validation import validate_marker_image_and_description
 from fastapi import APIRouter, Depends, HTTPException
 from geoalchemy2 import Geometry
 from sqlalchemy import cast, func
 from sqlalchemy.orm import Session
-
-# from app.utils.image_validation import validate_uploaded_image
 
 
 router = APIRouter(prefix="/markers", tags=["markers"])
@@ -27,6 +26,17 @@ get_db_dep = Depends(get_db)
 
 @router.post("")
 def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
+    # Validate image and description with Gemini before saving
+    if marker.image_url or marker.image_gcs_uri:
+        is_valid, error_message, status_code = validate_marker_image_and_description(
+            image_gcs_uri=marker.image_gcs_uri,
+            image_url=marker.image_url,
+            description=marker.note,
+            claimed_animal=marker.animal,
+        )
+        if not is_valid:
+            raise HTTPException(status_code=status_code, detail=error_message)
+
     db_marker = models.Marker(
         animal=marker.animal,
         note=marker.note,
@@ -59,6 +69,25 @@ def update_marker(
     db_marker = db.get(models.Marker, marker_id)
     if not db_marker:
         raise HTTPException(status_code=404, detail="Marker not found")
+
+    # Determine animal type for validation (use updated value if provided, else existing)
+    animal_for_validation = payload.animal if payload.animal is not None else db_marker.animal
+    # Determine description for validation
+    description_for_validation = payload.note if payload.note is not None else db_marker.note
+
+    # Validate if image or description is being updated
+    if (payload.image_url is not None or payload.image_gcs_uri is not None) or payload.note is not None:
+        image_url_to_validate = payload.image_url if payload.image_url is not None else db_marker.image_url
+        image_gcs_uri_to_validate = payload.image_gcs_uri if payload.image_gcs_uri is not None else None
+
+        is_valid, error_message, status_code = validate_marker_image_and_description(
+            image_gcs_uri=image_gcs_uri_to_validate,
+            image_url=image_url_to_validate,
+            description=description_for_validation,
+            claimed_animal=animal_for_validation,
+        )
+        if not is_valid:
+            raise HTTPException(status_code=status_code, detail=error_message)
 
     if payload.animal is not None:
         db_marker.animal = payload.animal

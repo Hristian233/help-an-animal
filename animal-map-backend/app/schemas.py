@@ -7,6 +7,7 @@ class MarkerCreate(BaseModel):
     lat: float
     lng: float
     image_url: str | None = None
+    image_gcs_uri: str | None = None
 
 
 class MarkerUpdate(BaseModel):
@@ -15,6 +16,7 @@ class MarkerUpdate(BaseModel):
     lat: float | None = None
     lng: float | None = None
     image_url: str | None = None
+    image_gcs_uri: str | None = None
 
 
 class Marker(BaseModel):

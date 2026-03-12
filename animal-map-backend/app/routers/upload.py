@@ -92,7 +92,8 @@ def generate_upload_url(payload: UploadInitRequest):
 
     if not IS_CLOUD_RUN:
         # LOCAL: no signed URL, return a dummy / direct upload path
-        return {"upload_url": None, "public_url": f"/mock/{file_name}"}
+        gcs_uri = f"gs://{INBOX_BUCKET}/{file_name}"  # Still return gcs_uri for local dev
+        return {"upload_url": None, "public_url": f"/mock/{file_name}", "gcs_uri": gcs_uri}
 
     client = get_storage_client()
     bucket = client.bucket(INBOX_BUCKET)
@@ -113,5 +114,6 @@ def generate_upload_url(payload: UploadInitRequest):
     )
 
     public_url = f"https://storage.googleapis.com/{PUBLIC_BUCKET}/{file_name}"
+    gcs_uri = f"gs://{INBOX_BUCKET}/{file_name}"
 
-    return {"upload_url": upload_url, "public_url": public_url}
+    return {"upload_url": upload_url, "public_url": public_url, "gcs_uri": gcs_uri}

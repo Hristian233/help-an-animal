@@ -38,6 +38,7 @@ type MarkerPayload = {
   lat: number;
   lng: number;
   image_url: string | null;
+  image_gcs_uri: string | null;
 };
 
 type NewMarkerCoords = {

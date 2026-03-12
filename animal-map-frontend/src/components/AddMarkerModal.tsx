@@ -23,6 +23,7 @@ type AddMarkerModalProps = {
     lat: number;
     lng: number;
     image_url: string | null;
+    image_gcs_uri: string | null;
   }) => void | Promise<boolean | void>;
   initialMarker?: MarkerData | null;
   onUpdate?: (
@@ -33,6 +34,7 @@ type AddMarkerModalProps = {
       lat: number;
       lng: number;
       image_url: string | null;
+      image_gcs_uri: string | null;
     },
   ) => void | Promise<boolean | void>;
 };
@@ -71,12 +73,17 @@ export function AddMarkerModal({
 
   const handleSubmit = async () => {
     let image_url: string | null = null;
+    let image_gcs_uri: string | null = null;
 
     if (isEdit && initialMarker) {
       image_url = initialMarker.image_url;
     } else if (file) {
       try {
-        image_url = await uploadFileToGCS();
+        const uploadResult = await uploadFileToGCS();
+        if (uploadResult) {
+          image_url = uploadResult.image_url;
+          image_gcs_uri = uploadResult.image_gcs_uri;
+        }
       } catch (err) {
         console.error("Image upload failed", err);
         showToast("Image upload failed. Try again.");
@@ -95,25 +102,26 @@ export function AddMarkerModal({
         lat: initialMarker.lat,
         lng: initialMarker.lng,
         image_url,
+        image_gcs_uri,
       });
       if (ok !== false) onClose();
     } else {
-      const ok = await onSave({ animal, note, lat, lng, image_url });
+      const ok = await onSave({ animal, note, lat, lng, image_url, image_gcs_uri });
       if (ok !== false) onClose();
     }
   };
 
-  const uploadFileToGCS = async () => {
+  const uploadFileToGCS = async (): Promise<{ image_url: string; image_gcs_uri: string } | null> => {
     if (!file) return null;
 
     if (!file.type.startsWith("image/")) {
       showToast("Only image files are allowed");
-      return;
+      return null;
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
       showToast("Image exceeds 10 MB limit");
-      return;
+      return null;
     }
 
     // 1. Ask backend for signed URL
@@ -135,7 +143,7 @@ export function AddMarkerModal({
       return null;
     }
 
-    const { upload_url, public_url } = await res.json();
+    const { upload_url, public_url, gcs_uri } = await res.json();
 
     if (IS_PRODUCTION) {
       // 2. Upload file directly to GCS
@@ -153,8 +161,8 @@ export function AddMarkerModal({
       }
     }
 
-    // Return final public URL (used in POST /markers)
-    return public_url;
+    // Return both public URL and GCS URI (used in POST /markers)
+    return { image_url: public_url, image_gcs_uri: gcs_uri || null };
   };
 
   const hasPreview = !!preview || !!(isEdit && initialMarker?.image_url);
