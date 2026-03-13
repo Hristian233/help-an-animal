@@ -10,13 +10,13 @@ from PIL import Image
 def validate_animal_image(image_url: str) -> bool:
     """
     Validate that an image contains an animal using Gemini API.
-    
+
     Args:
         image_url: URL of the image to validate
-        
+
     Returns:
         True if the image contains an animal, False otherwise
-        
+
     Raises:
         HTTPException: If validation fails or API call fails
     """
@@ -26,39 +26,39 @@ def validate_animal_image(image_url: str) -> bool:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Gemini API key not configured",
         )
-    
+
     try:
         # Configure Gemini API
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        
+        model = genai.GenerativeModel("gemini-3-flash-preview")
+
         # Download image from URL
         # Handle both local mock URLs and actual GCS URLs
         if image_url.startswith("/mock/"):
             # For local development, skip validation or use a placeholder
             # In production, this should be a real URL
             return True
-        
+
         # Download the image
         response = httpx.get(image_url, timeout=30.0)
         response.raise_for_status()
-        
+
         # Convert to PIL Image for Gemini API
         image_data = BytesIO(response.content)
         pil_image = Image.open(image_data)
-        
+
         # Create prompt for Gemini
-        prompt = """Analyze this image and determine if it contains an animal (mammal, bird, reptile, amphibian, fish, or any other animal).
+        prompt = """Analyze this image and determine if it contains an animal (cat, dog, fox, hedgehog, or any other animal).
         
-Respond with ONLY one word: "YES" if the image contains an animal, or "NO" if it does not contain an animal.
-Do not include any explanation or additional text."""
-        
+        Respond with ONLY one word: "YES" if the image contains an animal, or "NO" if it does not contain an animal.
+        Do not include any explanation or additional text."""
+
         # Call Gemini API with image
         result = model.generate_content([prompt, pil_image])
-        
+
         # Parse response
         response_text = result.text.strip().upper()
-        
+
         if "YES" in response_text:
             return True
         elif "NO" in response_text:
@@ -72,7 +72,7 @@ Do not include any explanation or additional text."""
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Unable to verify that the image contains an animal. Please upload a clear image with an animal.",
             )
-            
+
     except httpx.HTTPError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
