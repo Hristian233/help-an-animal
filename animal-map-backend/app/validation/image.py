@@ -48,10 +48,13 @@ def validate_animal_image(image_url: str) -> bool:
         pil_image = Image.open(image_data)
 
         # Create prompt for Gemini
-        prompt = """Analyze this image and determine if it contains an animal (cat, dog, fox, hedgehog, or any other animal).
-        
-        Respond with ONLY one word: "YES" if the image contains an animal, or "NO" if it does not contain an animal.
-        Do not include any explanation or additional text."""
+        prompt = (
+            "Analyze this image and determine if it contains an animal "
+            "(cat, dog, fox, hedgehog, or any other animal).\n\n"
+            'Respond with ONLY one word: "YES" if the image contains an animal, '
+            'or "NO" if it does not contain an animal.\n'
+            "Do not include any explanation or additional text."
+        )
 
         # Call Gemini API with image
         result = model.generate_content([prompt, pil_image])
@@ -70,14 +73,19 @@ def validate_animal_image(image_url: str) -> bool:
             # If response is unclear, be conservative and reject
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Unable to verify that the image contains an animal. Please upload a clear image with an animal.",
+                detail=(
+                    "Unable to verify that the image contains an animal. "
+                    "Please upload a clear image with an animal."
+                ),
             )
 
     except httpx.HTTPError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to download image for validation: {str(e)}",
-        )
+        ) from e
+    except HTTPException:
+        raise
     except Exception as e:
         # Handle Gemini API errors
         error_msg = str(e)
@@ -85,8 +93,8 @@ def validate_animal_image(image_url: str) -> bool:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Gemini API key is invalid or not configured",
-            )
+            ) from e
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Image validation failed: {error_msg}",
-        )
+        ) from e
