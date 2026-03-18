@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+import os
+
 from app import models, schemas
 from app.database import SessionLocal
 from app.validation import validate_animal_image, validate_description
@@ -10,6 +12,17 @@ from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/markers", tags=["markers"])
 BUCKET_NAME = "help-an-animal-inbox"
+
+def _env_truthy(name: str, default: bool = False) -> bool:
+    val = os.getenv(name)
+    if val is None:
+        return default
+    return val.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+# Default OFF unless explicitly enabled (tests/local should not call external APIs).
+VALIDATE_IMAGES = _env_truthy("VALIDATE_IMAGES", default=False)
+VALIDATE_DESCRIPTIONS = _env_truthy("VALIDATE_DESCRIPTIONS", default=False)
 
 
 def get_db():
@@ -26,11 +39,12 @@ get_db_dep = Depends(get_db)
 @router.post("")
 def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
     # Validate image if provided
-    if marker.image_url:
+    if VALIDATE_IMAGES and marker.image_url:
         validate_animal_image(marker.image_url)
 
     # Validate description if provided
-    validate_description(marker.note, marker.animal)
+    if VALIDATE_DESCRIPTIONS:
+        validate_description(marker.note, marker.animal)
 
     # Only create marker if validation passes
     db_marker = models.Marker(
@@ -68,7 +82,7 @@ def update_marker(
 
     # Validate description if provided
     # If animal isn't supplied on PATCH, use the existing marker's animal.
-    if payload.note is not None:
+    if VALIDATE_DESCRIPTIONS and payload.note is not None:
         validate_description(payload.note, payload.animal or db_marker.animal)
 
     if payload.animal is not None:
