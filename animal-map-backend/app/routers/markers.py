@@ -1,6 +1,5 @@
-from datetime import datetime, timezone
-
 import os
+from datetime import datetime, timezone
 
 from app import models, schemas
 from app.database import SessionLocal
@@ -12,6 +11,7 @@ from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/markers", tags=["markers"])
 BUCKET_NAME = "help-an-animal-inbox"
+
 
 def _env_truthy(name: str, default: bool = False) -> bool:
     val = os.getenv(name)
