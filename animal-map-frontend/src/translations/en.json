@@ -32,5 +32,10 @@
     "imageGeneric": "Something went wrong! Please upload a clear photo of the selected animal.",
     "descriptionGeneric": "The description is invalid. Please enter a short and appropriate description.",
     "unknownError": "An error occurred. Please try again."
+  },
+  "backendDown": {
+    "title": "Service temporarily unavailable",
+    "description": "We can’t reach the server right now. Check your connection and try again.",
+    "retry": "Try again"
   }
 }

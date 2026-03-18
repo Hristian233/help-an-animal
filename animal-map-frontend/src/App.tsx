@@ -11,6 +11,7 @@ import { useT } from "./hooks/useTranslation";
 import { API_URL } from "./config/env";
 import { formatDate } from "./utils/formatDate";
 import { FullScreenSpinner } from "./components/FullScreenSpinner";
+import { BackendUnavailableScreen } from "./components/BackendUnavailableScreen.tsx";
 
 const containerStyle = {
   width: "100vw",
@@ -48,6 +49,17 @@ type NewMarkerCoords = {
 
 const libraries: Libraries = ["geometry"];
 
+type MarkersLoadError =
+  | {
+      kind: "http";
+      status?: number;
+      message?: string;
+    }
+  | {
+      kind: "network";
+      message?: string;
+    };
+
 function App() {
   const [markers, setMarkers] = useState<MarkerType[]>([]);
   const [selectedMarker, setSelectedMarker] = useState<MarkerType | null>(null);
@@ -61,6 +73,8 @@ function App() {
   const [isLocatingForEdit, setIsLocatingForEdit] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(true);
+  const [markersLoadError, setMarkersLoadError] =
+    useState<MarkersLoadError | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -96,12 +110,29 @@ function App() {
 
   const loadMarkers = useCallback(async () => {
     setIsLoadingMarkers(true);
+    setMarkersLoadError(null);
 
     try {
-      const res = await axios.get(`${API_URL}/markers/all`);
+      const res = await axios.get(`${API_URL}/markers/all`, { timeout: 10_000 });
       setMarkers(res.data);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error loading markers:", error);
+
+      if (axios.isAxiosError(error)) {
+        if (typeof error.response?.status === "number") {
+          setMarkersLoadError({
+            kind: "http",
+            status: error.response.status,
+            message: error.message,
+          });
+        } else {
+          setMarkersLoadError({ kind: "network", message: error.message });
+        }
+      } else if (error instanceof Error) {
+        setMarkersLoadError({ kind: "network", message: error.message });
+      } else {
+        setMarkersLoadError({ kind: "network" });
+      }
     } finally {
       setIsLoadingMarkers(false);
     }
@@ -315,6 +346,24 @@ function App() {
   }
 
   if (!isLoaded) return <div>Loading map...</div>;
+
+  if (markersLoadError) {
+    const details =
+      markersLoadError.kind === "http"
+        ? `HTTP ${markersLoadError.status ?? "?"}`
+        : markersLoadError.message;
+
+    return (
+      <BackendUnavailableScreen
+        title={t("backendDown.title")}
+        description={t("backendDown.description")}
+        retryLabel={t("backendDown.retry")}
+        details={details}
+        isRetrying={isLoadingMarkers}
+        onRetry={loadMarkers}
+      />
+    );
+  }
 
   return (
     <>
