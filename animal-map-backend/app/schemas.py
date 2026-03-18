@@ -10,7 +10,7 @@ class MarkerCreate(BaseModel):
 
 
 class MarkerUpdate(BaseModel):
-    animal: str
+    animal: str | None = None
     note: str | None = None
     lat: float | None = None
     lng: float | None = None

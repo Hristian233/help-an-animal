@@ -62,13 +62,14 @@ def update_marker(
     payload: schemas.MarkerUpdate,
     db: Session = get_db_dep,
 ):
-
-    # Validate description if provided
-    validate_description(payload.note, payload.animal)
-
     db_marker = db.get(models.Marker, marker_id)
     if not db_marker:
         raise HTTPException(status_code=404, detail="Marker not found")
+
+    # Validate description if provided
+    # If animal isn't supplied on PATCH, use the existing marker's animal.
+    if payload.note is not None:
+        validate_description(payload.note, payload.animal or db_marker.animal)
 
     if payload.animal is not None:
         db_marker.animal = payload.animal
