@@ -229,7 +229,7 @@ function App() {
         message = err.message;
       }
 
-      showToast(message);
+      showToast(mapBackendErrorToUserMessage(message, t));
       return false;
     }
   };
@@ -271,11 +271,26 @@ function App() {
         message = err.message;
       }
 
-      showToast(message);
+      showToast(mapBackendErrorToUserMessage(message, t));
       return false;
     }
     return false;
   };
+
+  function mapBackendErrorToUserMessage(
+    backendMessage: string,
+    tFn: (key: string) => string,
+  ): string {
+    const msg = backendMessage ?? "";
+    const lower = msg.toLowerCase();
+
+    // Collapse all validation issues into 2 generic user-facing messages.
+    if (lower.includes("description")) return tFn("validation.descriptionGeneric");
+    if (lower.includes("image")) return tFn("validation.imageGeneric");
+
+    // Fallback: keep existing behavior for non-validation errors.
+    return backendMessage || tFn("validation.unknownError");
+  }
 
   if (!isLoaded) return <div>Loading map...</div>;
 

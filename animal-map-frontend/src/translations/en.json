@@ -27,5 +27,10 @@
     "fox": "Fox",
     "dog": "Dog",
     "cat": "Cat"
+  },
+  "validation": {
+    "imageGeneric": "Something went wrong! Please upload a clear photo of the selected animal.",
+    "descriptionGeneric": "The description is invalid. Please enter a short and appropriate description.",
+    "unknownError": "An error occurred. Please try again."
   }
 }

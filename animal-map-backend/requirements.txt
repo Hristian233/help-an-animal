@@ -12,7 +12,10 @@ google-api-core==2.28.1
 google-auth==2.43.0
 google-cloud-core==2.5.0
 google-cloud-storage==3.6.0
+google-cloud-translate==3.14.0
+google-cloud-vision==3.7.2
 google-crc32c==1.7.1
+google-generativeai==0.8.3
 google-resumable-media==2.8.0
 googleapis-common-protos==1.72.0
 greenlet==3.2.4
@@ -23,9 +26,11 @@ httpx==0.28.1
 idna==3.11
 iniconfig==2.3.0
 packaging==25.0
+pillow==11.0.0
 pluggy==1.6.0
 proto-plus==1.26.1
-protobuf==6.33.1
+# google-cloud-translate==3.14.0 requires protobuf < 5
+protobuf==4.25.3
 psycopg2-binary==2.9.11
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
