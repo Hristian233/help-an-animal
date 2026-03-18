@@ -8,7 +8,6 @@ from geoalchemy2 import Geometry
 from sqlalchemy import cast, func
 from sqlalchemy.orm import Session
 
-
 router = APIRouter(prefix="/markers", tags=["markers"])
 BUCKET_NAME = "help-an-animal-inbox"
 
@@ -52,12 +51,8 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
         "lat": marker.lat,
         "lng": marker.lng,
         "image_url": db_marker.image_url,
-        "created_at": (
-            db_marker.created_at.isoformat() if db_marker.created_at else None
-        ),
-        "updated_at": (
-            db_marker.updated_at.isoformat() if db_marker.updated_at else None
-        ),
+        "created_at": (db_marker.created_at.isoformat() if db_marker.created_at else None),
+        "updated_at": (db_marker.updated_at.isoformat() if db_marker.updated_at else None),
     }
 
 
@@ -109,12 +104,8 @@ def update_marker(
         "lat": lat or 0,
         "lng": lng or 0,
         "image_url": db_marker.image_url,
-        "created_at": (
-            db_marker.created_at.isoformat() if db_marker.created_at else None
-        ),
-        "updated_at": (
-            db_marker.updated_at.isoformat() if db_marker.updated_at else None
-        ),
+        "created_at": (db_marker.created_at.isoformat() if db_marker.created_at else None),
+        "updated_at": (db_marker.updated_at.isoformat() if db_marker.updated_at else None),
     }
 
 
