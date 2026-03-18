@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useT } from "../hooks/useTranslation";
 
 type FabMenuProps = {
-  onCheckNearby: () => void;
-  onCenterLocation: () => void;
+  onCheckNearby: () => void | Promise<void>;
+  onCenterLocation: () => void | Promise<void>;
   onAddAnimal: () => void;
 };
 

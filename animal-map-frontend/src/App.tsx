@@ -10,6 +10,7 @@ import { useToast } from "./hooks/useToast";
 import { useT } from "./hooks/useTranslation";
 import { API_URL } from "./config/env";
 import { formatDate } from "./utils/formatDate";
+import { FullScreenSpinner } from "./components/FullScreenSpinner";
 
 const containerStyle = {
   width: "100vw",
@@ -60,6 +61,7 @@ function App() {
   const [isLocatingForEdit, setIsLocatingForEdit] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(true);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -120,51 +122,71 @@ function App() {
     }
   }, [selectedMarker]);
 
-  const centerOnMyLocation = () => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+  const centerOnMyLocation = async () => {
+    setIsActionLoading(true);
+    try {
+      await new Promise<void>((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
 
-        setUserLocation({ lat, lng });
+            setUserLocation({ lat, lng });
 
-        map?.panTo({ lat, lng });
-        if ((map?.getZoom() ?? 0) < 14) map?.setZoom(15);
-      },
-      () => alert("Cannot get your location."),
-    );
+            map?.panTo({ lat, lng });
+            if ((map?.getZoom() ?? 0) < 14) map?.setZoom(15);
+            resolve();
+          },
+          () => {
+            alert("Cannot get your location.");
+            resolve();
+          },
+        );
+      });
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
-  const checkNearbyAnimals = () => {
+  const checkNearbyAnimals = async () => {
     if (!map) return;
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+    setIsActionLoading(true);
+    try {
+      await new Promise<void>((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
 
-        map.panTo({ lat, lng });
-        map.setZoom(15);
+            map.panTo({ lat, lng });
+            map.setZoom(15);
 
-        // Draw 1km circle
-        const circle = new google.maps.Circle({
-          map,
-          radius: 1000,
-          center: { lat, lng },
-          strokeColor: "#1E90FF",
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: "#1E90FF",
-          fillOpacity: 0.15,
-        });
+            // Draw 1km circle
+            const circle = new google.maps.Circle({
+              map,
+              radius: 1000,
+              center: { lat, lng },
+              strokeColor: "#1E90FF",
+              strokeOpacity: 0.8,
+              strokeWeight: 2,
+              fillColor: "#1E90FF",
+              fillOpacity: 0.15,
+            });
 
-        // Auto-clear
-        setTimeout(() => circle.setMap(null), 6000);
-      },
-      () => {
-        alert("Location is required to check nearby animals.");
-      },
-    );
+            // Auto-clear
+            setTimeout(() => circle.setMap(null), 6000);
+            resolve();
+          },
+          () => {
+            alert("Location is required to check nearby animals.");
+            resolve();
+          },
+        );
+      });
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   const handleStartEditing = (marker: MarkerType) => {
@@ -331,12 +353,7 @@ function App() {
           setIsPickingLocation(false);
         }}
       >
-        {isLoadingMarkers && (
-          <div className="map-loading">
-            <div className="spinner" />
-            <p style={{ color: "rgb(33, 53, 71)" }}>Зареждане...</p>
-          </div>
-        )}
+        <FullScreenSpinner show={isLoadingMarkers || isActionLoading} />
 
         {!isLoadingMarkers &&
           markers.map((m) => (
