@@ -165,7 +165,7 @@ function App() {
             // Draw 1km circle
             const circle = new google.maps.Circle({
               map,
-              radius: 1000,
+              radius: 100,
               center: { lat, lng },
               strokeColor: "#1E90FF",
               strokeOpacity: 0.8,
@@ -307,7 +307,8 @@ function App() {
     const lower = msg.toLowerCase();
 
     // Collapse all validation issues into 2 generic user-facing messages.
-    if (lower.includes("description")) return tFn("validation.descriptionGeneric");
+    if (lower.includes("description"))
+      return tFn("validation.descriptionGeneric");
     if (lower.includes("image")) return tFn("validation.imageGeneric");
 
     // Fallback: keep existing behavior for non-validation errors.
