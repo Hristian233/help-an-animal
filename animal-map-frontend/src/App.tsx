@@ -503,37 +503,86 @@ function App() {
               <div
                 style={{
                   display: "flex",
-                  gap: "8px",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                  gap: "6px",
                   marginBottom: "8px",
+                  marginTop: "2px",
                 }}
               >
                 <button
                   type="button"
                   onClick={() => handleCopyMarkerLink(selectedMarker)}
+                  title={t("copyLink")}
+                  aria-label={t("copyLink")}
                   style={{
-                    padding: "4px 8px",
+                    width: "28px",
+                    height: "28px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     border: "1px solid #dadce0",
                     borderRadius: "6px",
                     background: "#fff",
                     cursor: "pointer",
-                    fontSize: "12px",
                   }}
                 >
-                  {t("copyLink")}
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <rect
+                      x="9"
+                      y="9"
+                      width="11"
+                      height="11"
+                      rx="2"
+                      stroke="#202124"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M15 9V6C15 4.89543 14.1046 4 13 4H6C4.89543 4 4 4.89543 4 6V13C4 14.1046 4.89543 15 6 15H9"
+                      stroke="#202124"
+                      strokeWidth="2"
+                    />
+                  </svg>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDirections(selectedMarker)}
+                  title={t("directions")}
+                  aria-label={t("directions")}
                   style={{
-                    padding: "4px 8px",
+                    width: "28px",
+                    height: "28px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     border: "1px solid #dadce0",
                     borderRadius: "6px",
                     background: "#fff",
                     cursor: "pointer",
-                    fontSize: "12px",
                   }}
                 >
-                  {t("directions")}
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M21 3L14 21L11 13L3 10L21 3Z"
+                      stroke="#202124"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
               </div>
               <img
