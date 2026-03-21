@@ -642,15 +642,17 @@ function App() {
                     t("update")
                   )}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleEditInfoClick(selectedMarker)}
-                  className="marker-info-btn"
-                  title={t("updateInfo")}
-                  aria-label={t("updateInfo")}
-                >
-                  ?
-                </button>
+                {!canEditSelectedMarker && (
+                  <button
+                    type="button"
+                    onClick={() => handleEditInfoClick(selectedMarker)}
+                    className="marker-info-btn"
+                    title={t("updateInfo")}
+                    aria-label={t("updateInfo")}
+                  >
+                    ?
+                  </button>
+                )}
               </div>
             </div>
           </InfoWindow>
