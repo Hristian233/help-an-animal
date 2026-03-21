@@ -490,7 +490,7 @@ function App() {
               lat: selectedMarker.lat,
               lng: selectedMarker.lng,
             }}
-            onCloseClick={() => setSelectedMarker(null)}
+            options={{ headerDisabled: true }}
           >
             <div
               style={{
@@ -500,34 +500,14 @@ function App() {
                 color: "#000",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                  gap: "6px",
-                  marginBottom: "8px",
-                  marginTop: "0",
-                  paddingRight: "28px",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleCopyMarkerLink(selectedMarker)}
+              <div className="info-window-actions">
+                <div className="info-window-actions-left">
+                  <button
+                    type="button"
+                    className="info-window-action-btn"
+                    onClick={() => handleCopyMarkerLink(selectedMarker)}
                   title={t("copyLink")}
                   aria-label={t("copyLink")}
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "1px solid #dadce0",
-                    borderRadius: "6px",
-                    background: "#fff",
-                    color: "#1f1f1f",
-                    cursor: "pointer",
-                  }}
                 >
                   <svg
                     width="18"
@@ -537,26 +517,15 @@ function App() {
                     xmlns="http://www.w3.org/2000/svg"
                     aria-hidden="true"
                   >
-                    <path d="M16 1H6C4.9 1 4 1.9 4 3V14H6V3H16V1ZM19 5H10C8.9 5 8 5.9 8 7V21C8 22.1 8.9 23 10 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H10V7H19V21Z" />
+                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4V7h4c2.76 0 5 2.24 5 5s-2.24 5-5 5h-4v-1.9h4c1.71 0 3.1-1.39 3.1-3.1s-1.39-3.1-3.1-3.1z" />
                   </svg>
                 </button>
                 <button
                   type="button"
+                  className="info-window-action-btn"
                   onClick={() => handleDirections(selectedMarker)}
                   title={t("directions")}
                   aria-label={t("directions")}
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "1px solid #dadce0",
-                    borderRadius: "6px",
-                    background: "#fff",
-                    color: "#1f1f1f",
-                    cursor: "pointer",
-                  }}
                 >
                   <svg
                     width="18"
@@ -566,7 +535,26 @@ function App() {
                     xmlns="http://www.w3.org/2000/svg"
                     aria-hidden="true"
                   >
-                    <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" />
+                    <path d="M12 2L4.5 20.29l1.41.71L12 18l6.09 3 .71-1.41L12 2z" />
+                  </svg>
+                </button>
+                </div>
+                <button
+                  type="button"
+                  className="info-window-action-btn"
+                  onClick={() => setSelectedMarker(null)}
+                  title={t("close")}
+                  aria-label={t("close")}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
                   </svg>
                 </button>
               </div>
