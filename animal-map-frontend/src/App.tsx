@@ -517,39 +517,27 @@ function App() {
                   title={t("copyLink")}
                   aria-label={t("copyLink")}
                   style={{
-                    width: "28px",
-                    height: "28px",
+                    width: "30px",
+                    height: "30px",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
                     border: "1px solid #dadce0",
                     borderRadius: "6px",
                     background: "#fff",
+                    color: "#1f1f1f",
                     cursor: "pointer",
                   }}
                 >
                   <svg
-                    width="14"
-                    height="14"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
-                    fill="none"
+                    fill="currentColor"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-hidden="true"
                   >
-                    <rect
-                      x="9"
-                      y="9"
-                      width="11"
-                      height="11"
-                      rx="2"
-                      stroke="#202124"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M15 9V6C15 4.89543 14.1046 4 13 4H6C4.89543 4 4 4.89543 4 6V13C4 14.1046 4.89543 15 6 15H9"
-                      stroke="#202124"
-                      strokeWidth="2"
-                    />
+                    <path d="M16 1H6C4.9 1 4 1.9 4 3V14H6V3H16V1ZM19 5H10C8.9 5 8 5.9 8 7V21C8 22.1 8.9 23 10 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H10V7H19V21Z" />
                   </svg>
                 </button>
                 <button
@@ -558,31 +546,27 @@ function App() {
                   title={t("directions")}
                   aria-label={t("directions")}
                   style={{
-                    width: "28px",
-                    height: "28px",
+                    width: "30px",
+                    height: "30px",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
                     border: "1px solid #dadce0",
                     borderRadius: "6px",
                     background: "#fff",
+                    color: "#1f1f1f",
                     cursor: "pointer",
                   }}
                 >
                   <svg
-                    width="14"
-                    height="14"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
-                    fill="none"
+                    fill="currentColor"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-hidden="true"
                   >
-                    <path
-                      d="M21 3L14 21L11 13L3 10L21 3Z"
-                      stroke="#202124"
-                      strokeWidth="2"
-                      strokeLinejoin="round"
-                    />
+                    <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" />
                   </svg>
                 </button>
               </div>
