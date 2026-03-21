@@ -1,5 +1,5 @@
 import { GoogleMap, InfoWindow, Marker } from "@react-google-maps/api";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { animalIcons } from "./helpers/animalIcons";
 import { AddMarkerModal } from "./components/AddMarkerModal";
@@ -76,6 +76,7 @@ function App() {
   const [markersLoadError, setMarkersLoadError] =
     useState<MarkersLoadError | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const hasHandledDeepLinkRef = useRef(false);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -143,6 +144,27 @@ function App() {
       await loadMarkers();
     })();
   }, [loadMarkers]);
+
+  useEffect(() => {
+    if (isLoadingMarkers || !map || hasHandledDeepLinkRef.current) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const animalId = params.get("animal");
+
+    hasHandledDeepLinkRef.current = true;
+
+    if (!animalId) return;
+
+    const matchedMarker = markers.find((marker) => String(marker.id) === animalId);
+    if (!matchedMarker) {
+      showToast(t("animalLinkNotFound"));
+      return;
+    }
+
+    setSelectedMarker(matchedMarker);
+    map.panTo({ lat: matchedMarker.lat, lng: matchedMarker.lng });
+    if ((map.getZoom() ?? 0) < 15) map.setZoom(15);
+  }, [isLoadingMarkers, map, markers, showToast, t]);
 
   useEffect(() => {
     if (selectedMarker) {
@@ -254,6 +276,37 @@ function App() {
       },
       { enableHighAccuracy: true },
     );
+  };
+
+  const handleCopyMarkerLink = async (marker: MarkerType) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("animal", String(marker.id));
+    const shareUrl = url.toString();
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = shareUrl;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      showToast(t("linkCopied"));
+    } catch {
+      showToast(t("linkCopyFailed"));
+    }
+  };
+
+  const handleDirections = (marker: MarkerType) => {
+    const destination = `${marker.lat},${marker.lng}`;
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+    window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleSaveMarker = async (
@@ -447,6 +500,42 @@ function App() {
                 color: "#000",
               }}
             >
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  marginBottom: "8px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleCopyMarkerLink(selectedMarker)}
+                  style={{
+                    padding: "4px 8px",
+                    border: "1px solid #dadce0",
+                    borderRadius: "6px",
+                    background: "#fff",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                  }}
+                >
+                  {t("copyLink")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDirections(selectedMarker)}
+                  style={{
+                    padding: "4px 8px",
+                    border: "1px solid #dadce0",
+                    borderRadius: "6px",
+                    background: "#fff",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                  }}
+                >
+                  {t("directions")}
+                </button>
+              </div>
               <img
                 src={selectedMarker.image_url ?? ""}
                 alt="animal"
