@@ -12,6 +12,12 @@
   "createdAt": "Създадено на",
   "updatedAt": "Обновено на",
   "update": "Актуализирай",
+  "copyLink": "Копирай линк",
+  "directions": "Упътване",
+  "close": "Затвори",
+  "linkCopied": "Линкът беше копиран.",
+  "linkCopyFailed": "Неуспешно копиране на линка.",
+  "animalLinkNotFound": "Животно с този линк не беше намерено.",
   "addManually": "Добави ръчно",
   "buttons": {
     "center": "Центрирай",

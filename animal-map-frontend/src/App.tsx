@@ -1,5 +1,5 @@
 import { GoogleMap, InfoWindow, Marker } from "@react-google-maps/api";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { animalIcons } from "./helpers/animalIcons";
 import { AddMarkerModal } from "./components/AddMarkerModal";
@@ -76,6 +76,7 @@ function App() {
   const [markersLoadError, setMarkersLoadError] =
     useState<MarkersLoadError | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const hasHandledDeepLinkRef = useRef(false);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -143,6 +144,27 @@ function App() {
       await loadMarkers();
     })();
   }, [loadMarkers]);
+
+  useEffect(() => {
+    if (isLoadingMarkers || !map || hasHandledDeepLinkRef.current) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const animalId = params.get("animal");
+
+    hasHandledDeepLinkRef.current = true;
+
+    if (!animalId) return;
+
+    const matchedMarker = markers.find((marker) => String(marker.id) === animalId);
+    if (!matchedMarker) {
+      showToast(t("animalLinkNotFound"));
+      return;
+    }
+
+    setSelectedMarker(matchedMarker);
+    map.panTo({ lat: matchedMarker.lat, lng: matchedMarker.lng });
+    if ((map.getZoom() ?? 0) < 15) map.setZoom(15);
+  }, [isLoadingMarkers, map, markers, showToast, t]);
 
   useEffect(() => {
     if (selectedMarker) {
@@ -254,6 +276,37 @@ function App() {
       },
       { enableHighAccuracy: true },
     );
+  };
+
+  const handleCopyMarkerLink = async (marker: MarkerType) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("animal", String(marker.id));
+    const shareUrl = url.toString();
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = shareUrl;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      showToast(t("linkCopied"));
+    } catch {
+      showToast(t("linkCopyFailed"));
+    }
+  };
+
+  const handleDirections = (marker: MarkerType) => {
+    const destination = `${marker.lat},${marker.lng}`;
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+    window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleSaveMarker = async (
@@ -437,7 +490,7 @@ function App() {
               lat: selectedMarker.lat,
               lng: selectedMarker.lng,
             }}
-            onCloseClick={() => setSelectedMarker(null)}
+            options={{ headerDisabled: true }}
           >
             <div
               style={{
@@ -447,6 +500,64 @@ function App() {
                 color: "#000",
               }}
             >
+              <div className="info-window-actions">
+                <div className="info-window-actions-left">
+                  <button
+                    type="button"
+                    className="info-window-action-btn"
+                    onClick={() => handleCopyMarkerLink(selectedMarker)}
+                  title={t("copyLink")}
+                  aria-label={t("copyLink")}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4V7h4c2.76 0 5 2.24 5 5s-2.24 5-5 5h-4v-1.9h4c1.71 0 3.1-1.39 3.1-3.1s-1.39-3.1-3.1-3.1z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="info-window-action-btn"
+                  onClick={() => handleDirections(selectedMarker)}
+                  title={t("directions")}
+                  aria-label={t("directions")}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 2L4.5 20.29l1.41.71L12 18l6.09 3 .71-1.41L12 2z" />
+                  </svg>
+                </button>
+                </div>
+                <button
+                  type="button"
+                  className="info-window-action-btn"
+                  onClick={() => setSelectedMarker(null)}
+                  title={t("close")}
+                  aria-label={t("close")}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                  </svg>
+                </button>
+              </div>
               <img
                 src={selectedMarker.image_url ?? ""}
                 alt="animal"

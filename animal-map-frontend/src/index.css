@@ -436,6 +436,44 @@ button:focus-visible {
   filter: brightness(0.95);
 }
 
+/* InfoWindow action buttons (Copy link, Directions, Close) */
+.info-window-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  margin-top: 0;
+  min-height: 32px;
+}
+
+.info-window-actions-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-window-action-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  background: #fff;
+  color: #5f6368;
+  cursor: pointer;
+  padding: 0;
+}
+
+.info-window-action-btn:hover {
+  background: #f1f3f4;
+  color: #202124;
+  border-color: #bdc1c6;
+}
+
 .backend-unavailable-retry:disabled {
   opacity: 0.7;
   cursor: not-allowed;
