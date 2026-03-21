@@ -270,7 +270,9 @@ function App() {
   };
 
   const handleEditInfoClick = (marker: MarkerType) => {
-    showToast(t("updateRequirements"));
+    if (!userLocation) {
+      showToast(t("updateRequirements"));
+    }
 
     if (!navigator.geolocation) {
       showToast(t("errorLocation"));
