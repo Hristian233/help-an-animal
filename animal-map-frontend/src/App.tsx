@@ -503,11 +503,12 @@ function App() {
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "flex-end",
+                  justifyContent: "flex-start",
                   alignItems: "center",
                   gap: "6px",
                   marginBottom: "8px",
-                  marginTop: "2px",
+                  marginTop: "0",
+                  paddingRight: "28px",
                 }}
               >
                 <button
