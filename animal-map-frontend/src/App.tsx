@@ -486,13 +486,7 @@ function App() {
             <Marker
               key={m.id}
               position={{ lat: m.lat, lng: m.lng }}
-              draggable={true}
-              onDragEnd={(e) => {
-                setNewMarkerCoords({
-                  lat: e.latLng!.lat(),
-                  lng: e.latLng!.lng(),
-                });
-              }}
+              draggable={false}
               icon={
                 isLoaded
                   ? {
