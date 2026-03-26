@@ -48,5 +48,7 @@
     "title": "Service temporarily unavailable",
     "description": "We can’t reach the server right now. Check your connection and try again.",
     "retry": "Try again"
-  }
+  },
+  "updateInfo": "Update requirements",
+  "updateRequirements": "Enable location and stay within 100 meters of the marker to update it."
 }

@@ -71,6 +71,7 @@ function App() {
   } | null>(null);
   const [isPickingLocation, setIsPickingLocation] = useState(false);
   const [isLocatingForEdit, setIsLocatingForEdit] = useState(false);
+  const [canEditSelectedMarker, setCanEditSelectedMarker] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(true);
   const [markersLoadError, setMarkersLoadError] =
@@ -175,6 +176,23 @@ function App() {
     }
   }, [selectedMarker]);
 
+  useEffect(() => {
+    if (!selectedMarker || !userLocation) {
+      setCanEditSelectedMarker(false);
+      return;
+    }
+    if (!window.google?.maps?.geometry?.spherical) {
+      setCanEditSelectedMarker(false);
+      return;
+    }
+
+    const distance = google.maps.geometry.spherical.computeDistanceBetween(
+      new google.maps.LatLng(userLocation.lat, userLocation.lng),
+      new google.maps.LatLng(selectedMarker.lat, selectedMarker.lng),
+    );
+    setCanEditSelectedMarker(distance <= 100);
+  }, [selectedMarker, userLocation]);
+
   const centerOnMyLocation = async () => {
     setIsActionLoading(true);
     try {
@@ -243,12 +261,24 @@ function App() {
   };
 
   const handleStartEditing = (marker: MarkerType) => {
+    if (!canEditSelectedMarker || isLocatingForEdit) return;
+
+    setIsLocatingForEdit(true);
+    setMarkerToEdit(marker);
+    setSelectedMarker(null);
+    setIsLocatingForEdit(false);
+  };
+
+  const handleEditInfoClick = (marker: MarkerType) => {
+    if (!userLocation) {
+      showToast(t("updateRequirements"));
+    }
+
     if (!navigator.geolocation) {
       showToast(t("errorLocation"));
       return;
     }
 
-    setIsLocatingForEdit(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const currentLat = pos.coords.latitude;
@@ -262,17 +292,10 @@ function App() {
 
         if (distance > 100) {
           showToast(t("tooFar"));
-          setIsLocatingForEdit(false);
-          return;
         }
-
-        setMarkerToEdit(marker);
-        setSelectedMarker(null);
-        setIsLocatingForEdit(false);
       },
       () => {
         showToast(t("errorLocation"));
-        setIsLocatingForEdit(false);
       },
       { enableHighAccuracy: true },
     );
@@ -596,39 +619,41 @@ function App() {
                   {t("updatedAt")}: {formatDate(selectedMarker.updated_at)}
                 </p>
               )}
-              <button
-                type="button"
-                onClick={() => handleStartEditing(selectedMarker)}
-                disabled={isLocatingForEdit}
-                style={{
-                  marginTop: "8px",
-                  padding: "6px 12px",
-                  backgroundColor: "#4285F4",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  width: "100%",
-                  fontWeight: 500,
-                  opacity: isLocatingForEdit ? 0.8 : 1,
-                }}
-              >
-                {isLocatingForEdit ? (
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "14px",
-                      height: "14px",
-                      border: "2px solid rgba(255,255,255,0.5)",
-                      borderTopColor: "#fff",
-                      borderRadius: "50%",
-                      animation: "spin 0.8s linear infinite",
-                    }}
-                  />
-                ) : (
-                  t("update")
+              <div className="marker-edit-actions">
+                <button
+                  type="button"
+                  onClick={() => handleStartEditing(selectedMarker)}
+                  disabled={!canEditSelectedMarker || isLocatingForEdit}
+                  className="marker-update-btn"
+                >
+                  {isLocatingForEdit ? (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "14px",
+                        height: "14px",
+                        border: "2px solid rgba(255,255,255,0.5)",
+                        borderTopColor: "#fff",
+                        borderRadius: "50%",
+                        animation: "spin 0.8s linear infinite",
+                      }}
+                    />
+                  ) : (
+                    t("update")
+                  )}
+                </button>
+                {!canEditSelectedMarker && (
+                  <button
+                    type="button"
+                    onClick={() => handleEditInfoClick(selectedMarker)}
+                    className="marker-info-btn"
+                    title={t("updateInfo")}
+                    aria-label={t("updateInfo")}
+                  >
+                    ?
+                  </button>
                 )}
-              </button>
+              </div>
             </div>
           </InfoWindow>
         )}

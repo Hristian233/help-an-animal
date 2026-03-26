@@ -474,6 +474,47 @@ button:focus-visible {
   border-color: #bdc1c6;
 }
 
+.marker-edit-actions {
+  margin-top: 8px;
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+
+.marker-update-btn {
+  flex: 1 1 70%;
+  min-width: 0;
+  padding: 6px 12px;
+  background-color: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.marker-update-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.marker-info-btn {
+  flex: 0 0 30%;
+  max-width: 30%;
+  min-width: 44px;
+  padding: 6px 8px;
+  background: #f1f3f4;
+  color: #202124;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.marker-info-btn:hover {
+  background: #e8eaed;
+}
+
 .backend-unavailable-retry:disabled {
   opacity: 0.7;
   cursor: not-allowed;
