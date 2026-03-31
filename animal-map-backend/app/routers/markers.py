@@ -59,7 +59,7 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
 
     # Return JSON-safe response
     return {
-        "id": db_marker.id,
+        "id": str(db_marker.public_id),
         "animal": db_marker.animal,
         "note": db_marker.note,
         "lat": marker.lat,
@@ -72,11 +72,13 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
 
 @router.patch("/{marker_id}")
 def update_marker(
-    marker_id: int,
+    marker_id: str,
     payload: schemas.MarkerUpdate,
     db: Session = get_db_dep,
 ):
-    db_marker = db.get(models.Marker, marker_id)
+    db_marker = (
+        db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
+    )
     if not db_marker:
         raise HTTPException(status_code=404, detail="Marker not found")
 
@@ -106,14 +108,14 @@ def update_marker(
                 func.ST_Y(cast(models.Marker.location, Geometry)).label("lat"),
                 func.ST_X(cast(models.Marker.location, Geometry)).label("lng"),
             )
-            .filter(models.Marker.id == marker_id)
+            .filter(models.Marker.public_id == marker_id)
             .first()
         )
         lat = row.lat if row else 0.0
         lng = row.lng if row else 0.0
 
     return {
-        "id": db_marker.id,
+        "id": str(db_marker.public_id),
         "animal": db_marker.animal,
         "note": db_marker.note,
         "lat": lat or 0,
@@ -127,7 +129,7 @@ def update_marker(
 @router.get("/all", response_model=list[schemas.Marker])
 def get_all_markers(db: Session = get_db_dep):
     rows = db.query(
-        models.Marker.id,
+        models.Marker.public_id,
         models.Marker.animal,
         models.Marker.note,
         func.ST_Y(cast(models.Marker.location, Geometry)).label("lat"),
@@ -139,7 +141,7 @@ def get_all_markers(db: Session = get_db_dep):
 
     return [
         {
-            "id": r.id,
+            "id": str(r.public_id),
             "animal": r.animal,
             "note": r.note,
             "lat": r.lat,

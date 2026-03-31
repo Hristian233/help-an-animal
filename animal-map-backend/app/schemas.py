@@ -18,7 +18,7 @@ class MarkerUpdate(BaseModel):
 
 
 class Marker(BaseModel):
-    id: int
+    id: str
     animal: str
     note: str | None
     lat: float

@@ -364,7 +364,7 @@ function App() {
   };
 
   const handleUpdateMarker = async (
-    markerId: string | number,
+    markerId: string,
     data: MarkerPayload,
   ): Promise<boolean> => {
     try {

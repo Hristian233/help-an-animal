@@ -1,3 +1,16 @@
+import re
+
+
+def is_uuid_like(value: str) -> bool:
+    return bool(
+        re.fullmatch(
+            r"[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
+            value,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
 def test_get_all_markers_returns_list(client):
     response = client.get("/markers/all")
     assert response.status_code == 200
@@ -16,6 +29,7 @@ def test_create_marker(client):
     assert response.status_code == 200
     data = response.json()
     assert "id" in data
+    assert is_uuid_like(data["id"])
     assert data["animal"] == "Cat"
     assert data["note"] == "Found near park"
     assert data["lat"] == 52.52
@@ -40,6 +54,7 @@ def test_create_then_get_all(client):
     ids = {m["id"] for m in markers}
     assert marker1_id in ids
     assert marker2_id in ids
+    assert all(is_uuid_like(marker_id) for marker_id in ids)
 
 
 def test_update_marker(client):
@@ -64,7 +79,7 @@ def test_update_marker(client):
 
 def test_update_marker_not_found(client):
     response = client.patch(
-        "/markers/99999",
+        "/markers/00000000-0000-4000-8000-000000000000",
         json={"note": "Should fail"},
     )
     assert response.status_code == 404
