@@ -116,6 +116,9 @@ function App() {
 
     try {
       const res = await axios.get(`${API_URL}/markers/all`, { timeout: 10_000 });
+      if (!Array.isArray(res.data)) {
+        throw new Error("Invalid markers payload: expected array");
+      }
       setMarkers(res.data);
     } catch (error: unknown) {
       console.error("Error loading markers:", error);
