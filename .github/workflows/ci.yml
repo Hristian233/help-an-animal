@@ -140,7 +140,8 @@ jobs:
             --allow-unauthenticated \
             --service-account help-an-animal-uploader@animal-map-478820.iam.gserviceaccount.com \
             --add-cloudsql-instances rescue-sheets:europe-central2:rescue-cards-db \
-            --set-env-vars ENV=production,DB_USER=animal_app_user,DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_NAME=animal_map,INSTANCE_CONNECTION_NAME=rescue-sheets:europe-central2:rescue-cards-db
+            --set-env-vars "ENV=production,DB_USER=animal_app_user,DB_NAME=animal_map,INSTANCE_CONNECTION_NAME=rescue-sheets:europe-central2:rescue-cards-db" \
+            --set-secrets "DB_PASSWORD=DB_PASSWORD:latest"
 
   deploy-frontend:
     needs: frontend # Only deploy if tests/build pass
