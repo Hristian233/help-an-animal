@@ -76,9 +76,7 @@ def update_marker(
     payload: schemas.MarkerUpdate,
     db: Session = get_db_dep,
 ):
-    db_marker = (
-        db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
-    )
+    db_marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
     if not db_marker:
         raise HTTPException(status_code=404, detail="Marker not found")
 

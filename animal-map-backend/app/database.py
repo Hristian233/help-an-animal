@@ -84,9 +84,7 @@ def ensure_marker_public_id_column():
         if not has_public_id:
             conn.execute(text("ALTER TABLE markers ADD COLUMN public_id UUID"))
 
-        null_rows = conn.execute(
-            text("SELECT id FROM markers WHERE public_id IS NULL")
-        ).fetchall()
+        null_rows = conn.execute(text("SELECT id FROM markers WHERE public_id IS NULL")).fetchall()
         for row in null_rows:
             conn.execute(
                 text("UPDATE markers SET public_id = :public_id WHERE id = :id"),
