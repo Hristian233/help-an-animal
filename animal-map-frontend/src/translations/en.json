@@ -3,12 +3,23 @@
   "clickWithin100m": "Click on the map within 100 meters of your location.",
   "tooFar": "You must be within 100 meters.",
   "animalAdded": "Animal added successfully!",
+  "animalUpdated": "Animal updated successfully!",
   "checkingNearby": "Checking nearby animals…",
   "nearbyAnimals": "Nearby Animals",
   "yourLocation": "Your location",
   "loading": "Loading...",
   "errorLocation": "Failed to get location.",
+  "createdAt": "Created at",
+  "updatedAt": "Updated at",
+  "update": "Update",
+  "copyLink": "Copy link",
+  "directions": "Directions",
+  "close": "Close",
+  "linkCopied": "Link copied.",
+  "linkCopyFailed": "Could not copy link.",
+  "animalLinkNotFound": "This animal link is invalid or expired.",
   "addManually": "Add manually",
+  "editAnimal": "Edit animal",
   "buttons": {
     "center": "Center",
     "checkNearby": "Check Nearby",
@@ -27,5 +38,17 @@
     "fox": "Fox",
     "dog": "Dog",
     "cat": "Cat"
-  }
+  },
+  "validation": {
+    "imageGeneric": "Something went wrong! Please upload a clear photo of the selected animal.",
+    "descriptionGeneric": "The description is invalid. Please enter a short and appropriate description.",
+    "unknownError": "An error occurred. Please try again."
+  },
+  "backendDown": {
+    "title": "Service temporarily unavailable",
+    "description": "We can’t reach the server right now. Check your connection and try again.",
+    "retry": "Try again"
+  },
+  "updateInfo": "Update requirements",
+  "updateRequirements": "Enable location and stay within 100 meters of the marker to update it."
 }

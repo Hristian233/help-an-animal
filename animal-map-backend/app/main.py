@@ -1,17 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, engine
+from app.database import Base, engine, ensure_marker_public_id_column
 from app.rate_limit import RateLimitMiddleware
 from app.routers import markers, upload
 
 Base.metadata.create_all(bind=engine)
+ensure_marker_public_id_column()
 
 app = FastAPI()
 
 app.include_router(upload.router, prefix="/files", tags=["files"])
 
-origins = ["http://localhost:5173", "http://127.0.0.1:5173", "https://animal-map-95a3a.web.app"]
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://animal-map-95a3a.web.app",
+]
 
 app.add_middleware(
     CORSMiddleware,

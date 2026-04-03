@@ -1,8 +1,9 @@
 import os
+import uuid
 from urllib.parse import quote_plus
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 IS_CLOUD_RUN = bool(os.getenv("K_SERVICE"))
@@ -47,3 +48,55 @@ SessionLocal = sessionmaker(
 )
 
 Base = declarative_base()
+
+
+def ensure_marker_public_id_column():
+    """Create/backfill markers.public_id when migration tooling is absent."""
+    with engine.begin() as conn:
+        has_table = conn.execute(
+            text(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_name = 'markers'
+                )
+                """
+            )
+        ).scalar()
+        if not has_table:
+            return
+
+        has_public_id = conn.execute(
+            text(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'markers'
+                      AND column_name = 'public_id'
+                )
+                """
+            )
+        ).scalar()
+
+        if not has_public_id:
+            conn.execute(text("ALTER TABLE markers ADD COLUMN public_id UUID"))
+
+        null_rows = conn.execute(text("SELECT id FROM markers WHERE public_id IS NULL")).fetchall()
+        for row in null_rows:
+            conn.execute(
+                text("UPDATE markers SET public_id = :public_id WHERE id = :id"),
+                {"public_id": uuid.uuid4(), "id": row.id},
+            )
+
+        conn.execute(
+            text(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS ix_markers_public_id
+                ON markers (public_id)
+                """
+            )
+        )
+        conn.execute(text("ALTER TABLE markers ALTER COLUMN public_id SET NOT NULL"))

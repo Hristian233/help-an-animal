@@ -1,17 +1,28 @@
+import os
 from datetime import datetime, timezone
 
 from app import models, schemas
 from app.database import SessionLocal
+from app.validation import validate_animal_image, validate_description
 from fastapi import APIRouter, Depends, HTTPException
 from geoalchemy2 import Geometry
 from sqlalchemy import cast, func
 from sqlalchemy.orm import Session
 
-# from app.utils.image_validation import validate_uploaded_image
-
-
 router = APIRouter(prefix="/markers", tags=["markers"])
 BUCKET_NAME = "help-an-animal-inbox"
+
+
+def _env_truthy(name: str, default: bool = False) -> bool:
+    val = os.getenv(name)
+    if val is None:
+        return default
+    return val.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+# Default OFF unless explicitly enabled (tests/local should not call external APIs).
+VALIDATE_IMAGES = _env_truthy("VALIDATE_IMAGES", default=False)
+VALIDATE_DESCRIPTIONS = _env_truthy("VALIDATE_DESCRIPTIONS", default=False)
 
 
 def get_db():
@@ -27,6 +38,15 @@ get_db_dep = Depends(get_db)
 
 @router.post("")
 def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
+    # Validate image if provided
+    if VALIDATE_IMAGES and marker.image_url:
+        validate_animal_image(marker.image_url)
+
+    # Validate description if provided
+    if VALIDATE_DESCRIPTIONS:
+        validate_description(marker.note, marker.animal)
+
+    # Only create marker if validation passes
     db_marker = models.Marker(
         animal=marker.animal,
         note=marker.note,
@@ -39,26 +59,31 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
 
     # Return JSON-safe response
     return {
-        "id": db_marker.id,
+        "id": str(db_marker.public_id),
         "animal": db_marker.animal,
         "note": db_marker.note,
         "lat": marker.lat,
         "lng": marker.lng,
         "image_url": db_marker.image_url,
-        "created_at": db_marker.created_at.isoformat() if db_marker.created_at else None,
-        "updated_at": db_marker.updated_at.isoformat() if db_marker.updated_at else None,
+        "created_at": (db_marker.created_at.isoformat() if db_marker.created_at else None),
+        "updated_at": (db_marker.updated_at.isoformat() if db_marker.updated_at else None),
     }
 
 
 @router.patch("/{marker_id}")
 def update_marker(
-    marker_id: int,
+    marker_id: str,
     payload: schemas.MarkerUpdate,
     db: Session = get_db_dep,
 ):
-    db_marker = db.get(models.Marker, marker_id)
+    db_marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
     if not db_marker:
         raise HTTPException(status_code=404, detail="Marker not found")
+
+    # Validate description if provided
+    # If animal isn't supplied on PATCH, use the existing marker's animal.
+    if VALIDATE_DESCRIPTIONS and payload.note is not None:
+        validate_description(payload.note, payload.animal or db_marker.animal)
 
     if payload.animal is not None:
         db_marker.animal = payload.animal
@@ -81,28 +106,28 @@ def update_marker(
                 func.ST_Y(cast(models.Marker.location, Geometry)).label("lat"),
                 func.ST_X(cast(models.Marker.location, Geometry)).label("lng"),
             )
-            .filter(models.Marker.id == marker_id)
+            .filter(models.Marker.public_id == marker_id)
             .first()
         )
         lat = row.lat if row else 0.0
         lng = row.lng if row else 0.0
 
     return {
-        "id": db_marker.id,
+        "id": str(db_marker.public_id),
         "animal": db_marker.animal,
         "note": db_marker.note,
         "lat": lat or 0,
         "lng": lng or 0,
         "image_url": db_marker.image_url,
-        "created_at": db_marker.created_at.isoformat() if db_marker.created_at else None,
-        "updated_at": db_marker.updated_at.isoformat() if db_marker.updated_at else None,
+        "created_at": (db_marker.created_at.isoformat() if db_marker.created_at else None),
+        "updated_at": (db_marker.updated_at.isoformat() if db_marker.updated_at else None),
     }
 
 
 @router.get("/all", response_model=list[schemas.Marker])
 def get_all_markers(db: Session = get_db_dep):
     rows = db.query(
-        models.Marker.id,
+        models.Marker.public_id,
         models.Marker.animal,
         models.Marker.note,
         func.ST_Y(cast(models.Marker.location, Geometry)).label("lat"),
@@ -114,7 +139,7 @@ def get_all_markers(db: Session = get_db_dep):
 
     return [
         {
-            "id": r.id,
+            "id": str(r.public_id),
             "animal": r.animal,
             "note": r.note,
             "lat": r.lat,

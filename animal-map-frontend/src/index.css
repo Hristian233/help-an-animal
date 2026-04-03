@@ -354,3 +354,168 @@ button:focus-visible {
   /* Sometimes iOS needs a nudge to display block-level masks */
   display: block !important;
 }
+
+.backend-unavailable {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(
+      700px circle at 30% 20%,
+      rgba(22, 163, 74, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      700px circle at 70% 80%,
+      rgba(66, 133, 244, 0.15),
+      transparent 55%
+    ),
+    rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #213547;
+}
+
+.backend-unavailable-card {
+  width: 100%;
+  max-width: 560px;
+  border-radius: 16px;
+  padding: 22px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.backend-unavailable-code {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.backend-unavailable-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.backend-unavailable-description {
+  margin: 0 0 14px 0;
+  font-size: 14px;
+  color: rgba(17, 24, 39, 0.85);
+}
+
+.backend-unavailable-details {
+  margin: 0 0 16px 0;
+  font-size: 12px;
+  color: rgba(17, 24, 39, 0.7);
+  word-break: break-word;
+}
+
+.backend-unavailable-details-label {
+  font-weight: 600;
+}
+
+.backend-unavailable-retry {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 700;
+}
+
+.backend-unavailable-retry:hover {
+  filter: brightness(0.95);
+}
+
+/* InfoWindow action buttons (Copy link, Directions, Close) */
+.info-window-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  margin-top: 0;
+  min-height: 32px;
+}
+
+.info-window-actions-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-window-action-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  background: #fff;
+  color: #5f6368;
+  cursor: pointer;
+  padding: 0;
+}
+
+.info-window-action-btn:hover {
+  background: #f1f3f4;
+  color: #202124;
+  border-color: #bdc1c6;
+}
+
+.marker-edit-actions {
+  margin-top: 8px;
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+
+.marker-update-btn {
+  flex: 1 1 70%;
+  min-width: 0;
+  padding: 6px 12px;
+  background-color: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.marker-update-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.marker-info-btn {
+  flex: 0 0 30%;
+  max-width: 30%;
+  min-width: 44px;
+  padding: 6px 8px;
+  background: #f1f3f4;
+  color: #202124;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.marker-info-btn:hover {
+  background: #e8eaed;
+}
+
+.backend-unavailable-retry:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

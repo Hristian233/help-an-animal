@@ -50,6 +50,7 @@ export function AddMarkerModal({
   const [animal, setAnimal] = useState(initialMarker?.animal ?? "");
   const [note, setNote] = useState(initialMarker?.note ?? "");
   const [file, setFile] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [preview, setPreview] = useState<string | null>(
     initialMarker?.image_url ?? null,
   );
@@ -70,36 +71,44 @@ export function AddMarkerModal({
   };
 
   const handleSubmit = async () => {
-    let image_url: string | null = null;
+    if (isSaving) return;
+    if (!isFormValid) return;
 
-    if (isEdit && initialMarker) {
-      image_url = initialMarker.image_url;
-    } else if (file) {
-      try {
-        image_url = await uploadFileToGCS();
-      } catch (err) {
-        console.error("Image upload failed", err);
-        showToast("Image upload failed. Try again.");
+    setIsSaving(true);
+    try {
+      let image_url: string | null = null;
+
+      if (isEdit && initialMarker) {
+        image_url = initialMarker.image_url;
+      } else if (file) {
+        try {
+          image_url = await uploadFileToGCS();
+        } catch (err) {
+          console.error("Image upload failed", err);
+          showToast("Image upload failed. Try again.");
+          return;
+        }
+        if (!image_url) return;
+      } else {
+        showToast("Please select an image");
         return;
       }
-      if (!image_url) return;
-    } else {
-      showToast("Please select an image");
-      return;
-    }
 
-    if (isEdit && initialMarker && onUpdate) {
-      const ok = await onUpdate(initialMarker.id, {
-        animal,
-        note,
-        lat: initialMarker.lat,
-        lng: initialMarker.lng,
-        image_url,
-      });
-      if (ok !== false) onClose();
-    } else {
-      const ok = await onSave({ animal, note, lat, lng, image_url });
-      if (ok !== false) onClose();
+      if (isEdit && initialMarker && onUpdate) {
+        const ok = await onUpdate(initialMarker.id, {
+          animal,
+          note,
+          lat: initialMarker.lat,
+          lng: initialMarker.lng,
+          image_url,
+        });
+        if (ok !== false) onClose();
+      } else {
+        const ok = await onSave({ animal, note, lat, lng, image_url });
+        if (ok !== false) onClose();
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -164,10 +173,13 @@ export function AddMarkerModal({
 
   return (
     <>
-      <div className="modal-overlay" onClick={onClose}></div>
+      <div
+        className="modal-overlay"
+        onClick={isSaving ? undefined : onClose}
+      ></div>
 
       <div className="modal-box">
-        <button className="modal-close" onClick={onClose}>
+        <button className="modal-close" onClick={onClose} disabled={isSaving}>
           ×
         </button>
 
@@ -193,6 +205,7 @@ export function AddMarkerModal({
           className="modal-textarea"
           value={note}
           onChange={(e) => setNote(e.target.value)}
+          disabled={isSaving}
         />
 
         {!isEdit && (
@@ -203,6 +216,7 @@ export function AddMarkerModal({
               accept="image/*"
               onChange={handleFileChange}
               className="modal-file-input"
+              disabled={isSaving}
             />
           </>
         )}
@@ -218,11 +232,16 @@ export function AddMarkerModal({
           <button
             className="modal-btn save"
             onClick={handleSubmit}
-            disabled={!isFormValid}
+            disabled={!isFormValid || isSaving}
           >
+            {isSaving && <span className="modal-spinner" aria-hidden="true" />}
             {t("modal.save")}
           </button>
-          <button className="modal-btn cancel" onClick={onClose}>
+          <button
+            className="modal-btn cancel"
+            onClick={onClose}
+            disabled={isSaving}
+          >
             {t("modal.cancel")}
           </button>
         </div>
