@@ -9,9 +9,9 @@ import type { Libraries } from "@react-google-maps/api";
 import { useToast } from "./hooks/useToast";
 import { useT } from "./hooks/useTranslation";
 import { API_URL } from "./config/env";
-import { formatDate } from "./utils/formatDate";
 import { FullScreenSpinner } from "./components/FullScreenSpinner";
 import { BackendUnavailableScreen } from "./components/BackendUnavailableScreen.tsx";
+import { MarkerModal } from "./components/MarkerModal";
 
 const containerStyle = {
   width: "100vw",
@@ -63,15 +63,12 @@ type MarkersLoadError =
 function App() {
   const [markers, setMarkers] = useState<MarkerType[]>([]);
   const [selectedMarker, setSelectedMarker] = useState<MarkerType | null>(null);
-  const [markerToEdit, setMarkerToEdit] = useState<MarkerType | null>(null);
   const [newMarkerCoords, setNewMarkerCoords] = useState<NewMarkerCoords>(null);
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
   const [isPickingLocation, setIsPickingLocation] = useState(false);
-  const [isLocatingForEdit, setIsLocatingForEdit] = useState(false);
-  const [canEditSelectedMarker, setCanEditSelectedMarker] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(true);
   const [markersLoadError, setMarkersLoadError] =
@@ -179,23 +176,6 @@ function App() {
     }
   }, [selectedMarker]);
 
-  useEffect(() => {
-    if (!selectedMarker || !userLocation) {
-      setCanEditSelectedMarker(false);
-      return;
-    }
-    if (!window.google?.maps?.geometry?.spherical) {
-      setCanEditSelectedMarker(false);
-      return;
-    }
-
-    const distance = google.maps.geometry.spherical.computeDistanceBetween(
-      new google.maps.LatLng(userLocation.lat, userLocation.lng),
-      new google.maps.LatLng(selectedMarker.lat, selectedMarker.lng),
-    );
-    setCanEditSelectedMarker(distance <= 100);
-  }, [selectedMarker, userLocation]);
-
   const centerOnMyLocation = async () => {
     setIsActionLoading(true);
     try {
@@ -263,78 +243,6 @@ function App() {
     }
   };
 
-  const handleStartEditing = (marker: MarkerType) => {
-    if (!canEditSelectedMarker || isLocatingForEdit) return;
-
-    setIsLocatingForEdit(true);
-    setMarkerToEdit(marker);
-    setSelectedMarker(null);
-    setIsLocatingForEdit(false);
-  };
-
-  const handleEditInfoClick = (marker: MarkerType) => {
-    if (!userLocation) {
-      showToast(t("updateRequirements"));
-    }
-
-    if (!navigator.geolocation) {
-      showToast(t("errorLocation"));
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const currentLat = pos.coords.latitude;
-        const currentLng = pos.coords.longitude;
-        setUserLocation({ lat: currentLat, lng: currentLng });
-
-        const distance = google.maps.geometry.spherical.computeDistanceBetween(
-          new google.maps.LatLng(currentLat, currentLng),
-          new google.maps.LatLng(marker.lat, marker.lng),
-        );
-
-        if (distance > 100) {
-          showToast(t("tooFar"));
-        }
-      },
-      () => {
-        showToast(t("errorLocation"));
-      },
-      { enableHighAccuracy: true },
-    );
-  };
-
-  const handleCopyMarkerLink = async (marker: MarkerType) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("animal", String(marker.id));
-    const shareUrl = url.toString();
-
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = shareUrl;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-      }
-      showToast(t("linkCopied"));
-    } catch {
-      showToast(t("linkCopyFailed"));
-    }
-  };
-
-  const handleDirections = (marker: MarkerType) => {
-    const destination = `${marker.lat},${marker.lng}`;
-    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
-    window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
-  };
-
   const handleSaveMarker = async (
     data: MarkerPayload,
   ): Promise<boolean | void> => {
@@ -364,49 +272,6 @@ function App() {
       showToast(mapBackendErrorToUserMessage(message, t));
       return false;
     }
-  };
-
-  const handleUpdateMarker = async (
-    markerId: string | number,
-    data: MarkerPayload,
-  ): Promise<boolean> => {
-    try {
-      const res = await axios.patch(
-        `${API_URL}/markers/${String(markerId)}`,
-        data,
-      );
-
-      if (res.status >= 200 && res.status < 300) {
-        showToast(t("animalUpdated"));
-        loadMarkers();
-        setMarkerToEdit(null);
-        return true;
-      }
-    } catch (err: unknown) {
-      let message = "Unknown error";
-
-      if (axios.isAxiosError(err)) {
-        // FastAPI HTTPException
-        if (err.response?.data?.detail) {
-          message = err.response.data.detail;
-        }
-        // Other backend errors
-        else if (err.response?.data) {
-          message = JSON.stringify(err.response.data);
-        }
-        // Axios message (network, timeout, etc.)
-        else if (err.message) {
-          message = err.message;
-        }
-      } else if (err instanceof Error) {
-        // Non-Axios JS errors
-        message = err.message;
-      }
-
-      showToast(mapBackendErrorToUserMessage(message, t));
-      return false;
-    }
-    return false;
   };
 
   function mapBackendErrorToUserMessage(
@@ -512,146 +377,10 @@ function App() {
             }}
             options={{ headerDisabled: true }}
           >
-            <div
-              style={{
-                width: "200px",
-                minHeight: "150px",
-                overflow: "visible",
-                color: "#000",
-              }}
-            >
-              <div className="info-window-actions">
-                <div className="info-window-actions-left">
-                  <button
-                    type="button"
-                    className="info-window-action-btn"
-                    onClick={() => handleCopyMarkerLink(selectedMarker)}
-                  title={t("copyLink")}
-                  aria-label={t("copyLink")}
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4V7h4c2.76 0 5 2.24 5 5s-2.24 5-5 5h-4v-1.9h4c1.71 0 3.1-1.39 3.1-3.1s-1.39-3.1-3.1-3.1z" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  className="info-window-action-btn"
-                  onClick={() => handleDirections(selectedMarker)}
-                  title={t("directions")}
-                  aria-label={t("directions")}
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 2L4.5 20.29l1.41.71L12 18l6.09 3 .71-1.41L12 2z" />
-                  </svg>
-                </button>
-                </div>
-                <button
-                  type="button"
-                  className="info-window-action-btn"
-                  onClick={() => setSelectedMarker(null)}
-                  title={t("close")}
-                  aria-label={t("close")}
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-                  </svg>
-                </button>
-              </div>
-              <img
-                src={selectedMarker.image_url ?? ""}
-                alt="animal"
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  minHeight: "100px",
-                  borderRadius: "8px",
-                  display: "block",
-                  marginBottom: "8px",
-                }}
-              />
-              <h4 style={{ margin: "8px 0 4px 0" }}>
-                {t(`animals.${selectedMarker.animal}`)}
-              </h4>
-              <p>{selectedMarker.key_info}</p>
-              {selectedMarker.created_at && (
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "#666",
-                    margin: "4px 0 0 0",
-                  }}
-                >
-                  {t("createdAt")}: {formatDate(selectedMarker.created_at)}
-                </p>
-              )}
-              {selectedMarker.updated_at && (
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "#666",
-                    margin: "2px 0 0 0",
-                  }}
-                >
-                  {t("updatedAt")}: {formatDate(selectedMarker.updated_at)}
-                </p>
-              )}
-              <div className="marker-edit-actions">
-                <button
-                  type="button"
-                  onClick={() => handleStartEditing(selectedMarker)}
-                  disabled={!canEditSelectedMarker || isLocatingForEdit}
-                  className="marker-update-btn"
-                >
-                  {isLocatingForEdit ? (
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: "14px",
-                        height: "14px",
-                        border: "2px solid rgba(255,255,255,0.5)",
-                        borderTopColor: "#fff",
-                        borderRadius: "50%",
-                        animation: "spin 0.8s linear infinite",
-                      }}
-                    />
-                  ) : (
-                    t("update")
-                  )}
-                </button>
-                {!canEditSelectedMarker && (
-                  <button
-                    type="button"
-                    onClick={() => handleEditInfoClick(selectedMarker)}
-                    className="marker-info-btn"
-                    title={t("updateInfo")}
-                    aria-label={t("updateInfo")}
-                  >
-                    ?
-                  </button>
-                )}
-              </div>
-            </div>
+            <MarkerModal
+              marker={selectedMarker}
+              onClose={() => setSelectedMarker(null)}
+            />
           </InfoWindow>
         )}
 
@@ -687,17 +416,6 @@ function App() {
         />
       )}
 
-      {/* Modal for editing marker */}
-      {markerToEdit && (
-        <AddMarkerModal
-          lat={markerToEdit.lat}
-          lng={markerToEdit.lng}
-          onClose={() => setMarkerToEdit(null)}
-          onSave={handleSaveMarker}
-          initialMarker={markerToEdit}
-          onUpdate={handleUpdateMarker}
-        />
-      )}
     </>
   );
 }
