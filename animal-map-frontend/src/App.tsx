@@ -26,7 +26,7 @@ const defaultCenter = {
 type MarkerType = {
   id: string;
   animal: string;
-  note: string;
+  key_info: string;
   lat: number;
   lng: number;
   image_url: string;
@@ -36,7 +36,7 @@ type MarkerType = {
 
 type MarkerPayload = {
   animal: string;
-  note: string;
+  key_info: string;
   lat: number;
   lng: number;
   image_url: string | null;
@@ -593,7 +593,7 @@ function App() {
               <h4 style={{ margin: "8px 0 4px 0" }}>
                 {t(`animals.${selectedMarker.animal}`)}
               </h4>
-              <p>{selectedMarker.note}</p>
+              <p>{selectedMarker.key_info}</p>
               {selectedMarker.created_at && (
                 <p
                   style={{

@@ -7,7 +7,7 @@ import { useToast } from "../hooks/useToast.js";
 type MarkerData = {
   id: string | number;
   animal: string;
-  note: string;
+  key_info: string;
   lat: number;
   lng: number;
   image_url: string | null;
@@ -19,7 +19,7 @@ type AddMarkerModalProps = {
   onClose: () => void;
   onSave: (data: {
     animal: string;
-    note: string;
+    key_info: string;
     lat: number;
     lng: number;
     image_url: string | null;
@@ -29,7 +29,7 @@ type AddMarkerModalProps = {
     markerId: string | number,
     data: {
       animal: string;
-      note: string;
+      key_info: string;
       lat: number;
       lng: number;
       image_url: string | null;
@@ -48,7 +48,7 @@ export function AddMarkerModal({
   const isEdit = Boolean(initialMarker);
 
   const [animal, setAnimal] = useState(initialMarker?.animal ?? "");
-  const [note, setNote] = useState(initialMarker?.note ?? "");
+  const [keyInfo, setKeyInfo] = useState(initialMarker?.key_info ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [preview, setPreview] = useState<string | null>(
@@ -97,14 +97,20 @@ export function AddMarkerModal({
       if (isEdit && initialMarker && onUpdate) {
         const ok = await onUpdate(initialMarker.id, {
           animal,
-          note,
+          key_info: keyInfo,
           lat: initialMarker.lat,
           lng: initialMarker.lng,
           image_url,
         });
         if (ok !== false) onClose();
       } else {
-        const ok = await onSave({ animal, note, lat, lng, image_url });
+        const ok = await onSave({
+          animal,
+          key_info: keyInfo,
+          lat,
+          lng,
+          image_url,
+        });
         if (ok !== false) onClose();
       }
     } finally {
@@ -168,8 +174,8 @@ export function AddMarkerModal({
 
   const hasPreview = !!preview || !!(isEdit && initialMarker?.image_url);
   const isFormValid = isEdit
-    ? animal !== "" && note.trim() !== ""
-    : animal !== "" && note.trim() !== "" && (hasPreview || !!file);
+    ? animal !== "" && keyInfo.trim() !== ""
+    : animal !== "" && keyInfo.trim() !== "" && (hasPreview || !!file);
 
   return (
     <>
@@ -203,8 +209,8 @@ export function AddMarkerModal({
         <label className="modal-label">{t("modal.description")}</label>
         <textarea
           className="modal-textarea"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
+          value={keyInfo}
+          onChange={(e) => setKeyInfo(e.target.value)}
           disabled={isSaving}
         />
 

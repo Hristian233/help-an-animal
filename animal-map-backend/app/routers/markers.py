@@ -44,12 +44,12 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
 
     # Validate description if provided
     if VALIDATE_DESCRIPTIONS:
-        validate_description(marker.note, marker.animal)
+        validate_description(marker.key_info, marker.animal)
 
     # Only create marker if validation passes
     db_marker = models.Marker(
         animal=marker.animal,
-        note=marker.note,
+        key_info=marker.key_info,
         location=f"SRID=4326;POINT({marker.lng} {marker.lat})",
         image_url=marker.image_url,
     )
@@ -61,7 +61,7 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
     return {
         "id": str(db_marker.public_id),
         "animal": db_marker.animal,
-        "note": db_marker.note,
+        "key_info": db_marker.key_info,
         "lat": marker.lat,
         "lng": marker.lng,
         "image_url": db_marker.image_url,
@@ -82,13 +82,13 @@ def update_marker(
 
     # Validate description if provided
     # If animal isn't supplied on PATCH, use the existing marker's animal.
-    if VALIDATE_DESCRIPTIONS and payload.note is not None:
-        validate_description(payload.note, payload.animal or db_marker.animal)
+    if VALIDATE_DESCRIPTIONS and payload.key_info is not None:
+        validate_description(payload.key_info, payload.animal or db_marker.animal)
 
     if payload.animal is not None:
         db_marker.animal = payload.animal
-    if payload.note is not None:
-        db_marker.note = payload.note
+    if payload.key_info is not None:
+        db_marker.key_info = payload.key_info
     if payload.image_url is not None:
         db_marker.image_url = payload.image_url
     if payload.lat is not None and payload.lng is not None:
@@ -115,7 +115,7 @@ def update_marker(
     return {
         "id": str(db_marker.public_id),
         "animal": db_marker.animal,
-        "note": db_marker.note,
+        "key_info": db_marker.key_info,
         "lat": lat or 0,
         "lng": lng or 0,
         "image_url": db_marker.image_url,
@@ -129,7 +129,7 @@ def get_all_markers(db: Session = get_db_dep):
     rows = db.query(
         models.Marker.public_id,
         models.Marker.animal,
-        models.Marker.note,
+        models.Marker.key_info,
         func.ST_Y(cast(models.Marker.location, Geometry)).label("lat"),
         func.ST_X(cast(models.Marker.location, Geometry)).label("lng"),
         models.Marker.image_url,
@@ -141,7 +141,7 @@ def get_all_markers(db: Session = get_db_dep):
         {
             "id": str(r.public_id),
             "animal": r.animal,
-            "note": r.note,
+            "key_info": r.key_info,
             "lat": r.lat,
             "lng": r.lng,
             "image_url": r.image_url,

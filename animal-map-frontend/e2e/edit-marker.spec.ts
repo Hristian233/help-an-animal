@@ -4,7 +4,7 @@ const MOCK_LOCATION = { latitude: 42.6977, longitude: 23.3219 };
 const EXISTING_MARKER = {
   id: 1,
   animal: "dog",
-  note: "Original note",
+  key_info: "Original note",
   lat: 42.6977,
   lng: 23.3219,
   image_url: "https://example.com/dog.png",
