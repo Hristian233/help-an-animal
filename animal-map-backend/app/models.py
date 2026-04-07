@@ -1,7 +1,8 @@
+import enum
 import uuid
 
 from geoalchemy2 import Geography
-from sqlalchemy import Column, DateTime, Integer, String, func
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 
 from .database import Base
@@ -24,3 +25,21 @@ class Marker(Base):
     image_url = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class ReportType(str, enum.Enum):
+    FEED = "FEED"
+    WATER = "WATER"
+    SEEN = "SEEN"
+    PHOTO = "PHOTO"
+
+
+class Report(Base):
+    __tablename__ = "reports"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    marker_id = Column(Integer, ForeignKey("markers.id"), nullable=False, index=True)
+    type = Column(Enum(ReportType, name="report_type", native_enum=False), nullable=False)
+    text = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

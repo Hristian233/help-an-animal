@@ -610,6 +610,12 @@ button:focus-visible {
   color: #6b7280;
 }
 
+.report-error {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
 .marker-action-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;

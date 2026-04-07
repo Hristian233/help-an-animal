@@ -29,3 +29,18 @@ class Marker(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ReportCreate(BaseModel):
+    type: str
+    text: str | None = None
+    image_url: str | None = None
+
+
+class Report(BaseModel):
+    id: int
+    marker_id: int
+    type: str
+    text: str | None = None
+    image_url: str | None = None
+    created_at: str | None = None

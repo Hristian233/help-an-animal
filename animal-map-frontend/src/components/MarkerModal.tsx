@@ -20,19 +20,23 @@ type MarkerModalProps = {
 export function MarkerModal({ marker, onClose }: MarkerModalProps) {
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
+  const [reportsError, setReportsError] = useState<string | null>(null);
   const [activeReportType, setActiveReportType] = useState<ReportType | null>(null);
 
   const loadReports = useCallback(async () => {
     setIsLoadingReports(true);
+    setReportsError(null);
     try {
       const res = await fetch(`${API_URL}/markers/${String(marker.id)}/reports`);
       if (!res.ok) {
         setReports([]);
+        setReportsError("Unable to load reports right now.");
         return;
       }
       const data = (await res.json()) as Report[];
       if (!Array.isArray(data)) {
         setReports([]);
+        setReportsError("Unexpected reports response from server.");
         return;
       }
       const sorted = [...data].sort(
@@ -42,6 +46,7 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
       setReports(sorted);
     } catch {
       setReports([]);
+      setReportsError("Network error while loading reports.");
     } finally {
       setIsLoadingReports(false);
     }
@@ -67,7 +72,11 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
       </div>
 
       <MarkerHeader animal={marker.animal} imageUrl={marker.image_url} />
-      <ReportTimeline reports={reports} isLoading={isLoadingReports} />
+      <ReportTimeline
+        reports={reports}
+        isLoading={isLoadingReports}
+        errorMessage={reportsError}
+      />
       <ActionBar onActionClick={setActiveReportType} />
       {activeReportType ? (
         <ActionModal

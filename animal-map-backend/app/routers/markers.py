@@ -150,3 +150,65 @@ def get_all_markers(db: Session = get_db_dep):
         }
         for r in rows
     ]
+
+
+@router.get("/{marker_id}/reports")
+def get_marker_reports(marker_id: str, db: Session = get_db_dep):
+    marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
+    if not marker:
+        raise HTTPException(status_code=404, detail="Marker not found")
+
+    reports = (
+        db.query(models.Report)
+        .filter(models.Report.marker_id == marker.id)
+        .order_by(models.Report.created_at.desc())
+        .all()
+    )
+
+    return [
+        {
+            "id": r.id,
+            "marker_id": r.marker_id,
+            "type": r.type.value if hasattr(r.type, "value") else str(r.type),
+            "text": r.text,
+            "image_url": r.image_url,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reports
+    ]
+
+
+@router.post("/{marker_id}/reports")
+def create_marker_report(
+    marker_id: str, payload: schemas.ReportCreate, db: Session = get_db_dep
+):
+    marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
+    if not marker:
+        raise HTTPException(status_code=404, detail="Marker not found")
+
+    try:
+        report_type = models.ReportType(payload.type)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="Invalid report type. Allowed: FEED, WATER, SEEN, PHOTO",
+        ) from exc
+
+    report = models.Report(
+        marker_id=marker.id,
+        type=report_type,
+        text=payload.text,
+        image_url=payload.image_url,
+    )
+    db.add(report)
+    db.commit()
+    db.refresh(report)
+
+    return {
+        "id": report.id,
+        "marker_id": report.marker_id,
+        "type": report.type.value if hasattr(report.type, "value") else str(report.type),
+        "text": report.text,
+        "image_url": report.image_url,
+        "created_at": report.created_at.isoformat() if report.created_at else None,
+    }
