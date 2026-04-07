@@ -40,7 +40,6 @@ export function ReportItem({ report }: ReportItemProps) {
       </div>
 
       {report.text ? <p className="report-text">{report.text}</p> : null}
-
       {report.image_url ? (
         <img src={report.image_url} alt={report.type} className="report-image" />
       ) : null}
