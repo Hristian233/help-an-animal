@@ -173,9 +173,7 @@ def get_marker_reports(
         q = q.filter(models.Report.created_at < cursor_dt)
 
     rows = (
-        q.order_by(models.Report.created_at.desc(), models.Report.id.desc())
-        .limit(limit + 1)
-        .all()
+        q.order_by(models.Report.created_at.desc(), models.Report.id.desc()).limit(limit + 1).all()
     )
     has_more = len(rows) > limit
     reports = rows[:limit]
@@ -196,9 +194,7 @@ def get_marker_reports(
 
 
 @router.post("/{marker_id}/reports")
-def create_marker_report(
-    marker_id: str, payload: schemas.ReportCreate, db: Session = get_db_dep
-):
+def create_marker_report(marker_id: str, payload: schemas.ReportCreate, db: Session = get_db_dep):
     marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
     if not marker:
         raise HTTPException(status_code=404, detail="Marker not found")
