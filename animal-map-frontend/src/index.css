@@ -363,7 +363,8 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       700px circle at 30% 20%,
       rgba(22, 163, 74, 0.18),
       transparent 55%
@@ -455,8 +456,6 @@ button:focus-visible {
 }
 
 .info-window-action-btn {
-  width: 32px;
-  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -466,6 +465,17 @@ button:focus-visible {
   color: #5f6368;
   cursor: pointer;
   padding: 0;
+}
+
+.info-window-action-btn--sm {
+  width: 32px;
+  height: 32px;
+}
+
+.info-window-action-btn--md {
+  min-width: 64px;
+  height: 32px;
+  padding: 0 10px;
 }
 
 .info-window-action-btn:hover {
@@ -550,58 +560,54 @@ button:focus-visible {
   font-size: 16px;
 }
 
+.activity-preview-title {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  color: #111827;
+}
+
 .report-timeline {
-  max-height: 220px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  overflow-y: visible;
   margin-bottom: 10px;
   padding-right: 4px;
 }
 
-.report-item {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 8px;
-  background: #fff;
+.report-timeline-compact {
+  max-height: 220px;
+  overflow-y: auto;
 }
 
-.report-item-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+.report-story-list {
+  margin: 0 0 10px 0;
+  padding-left: 18px;
 }
 
-.report-type {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 2px 8px;
+.report-story-item {
+  margin: 0 0 4px 0;
+  font-size: 13px;
   color: #111827;
-  background: #e5e7eb;
 }
 
-.report-time {
-  font-size: 11px;
+.report-story-comment {
+  margin-top: 2px;
+  font-size: 12px;
   color: #6b7280;
 }
 
-.report-text {
-  margin: 0 0 6px 0;
-  font-size: 13px;
+.activity-view-all-btn {
+  width: 100%;
+  margin: 0 0 10px 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
   color: #111827;
-  white-space: pre-wrap;
 }
 
-.report-image {
-  width: 100%;
-  max-height: 150px;
-  object-fit: cover;
-  border-radius: 6px;
+.activity-view-all-btn:hover {
+  background: #f3f4f6;
 }
 
 .report-empty {
@@ -640,4 +646,44 @@ button:focus-visible {
   margin: 0;
   color: #b91c1c;
   font-size: 12px;
+}
+
+.activity-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.activity-sheet {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+}
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.activity-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.activity-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.activity-load-more {
+  margin-top: 10px;
+  width: 100%;
 }

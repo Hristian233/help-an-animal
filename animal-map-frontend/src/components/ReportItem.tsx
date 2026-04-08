@@ -1,3 +1,5 @@
+import { formatDate } from "../utils/formatDate";
+
 export type ReportType = "FEED" | "WATER" | "SEEN" | "PHOTO";
 
 export type Report = {
@@ -11,6 +13,7 @@ export type Report = {
 
 type ReportItemProps = {
   report: Report;
+  absoluteTime?: boolean;
 };
 
 function formatRelativeTime(isoDate: string): string {
@@ -29,20 +32,23 @@ function formatRelativeTime(isoDate: string): string {
   return `${days}d ago`;
 }
 
-export function ReportItem({ report }: ReportItemProps) {
-  return (
-    <div className="report-item">
-      <div className="report-item-meta">
-        <span className={`report-type report-type-${report.type.toLowerCase()}`}>
-          {report.type}
-        </span>
-        <span className="report-time">{formatRelativeTime(report.created_at)}</span>
-      </div>
+export function ReportItem({ report, absoluteTime = false }: ReportItemProps) {
+  const eventLabel =
+    report.type === "FEED"
+      ? "fed"
+      : report.type === "WATER"
+        ? "watered"
+        : "seen";
+  const timeLabel = absoluteTime
+    ? formatDate(report.created_at)
+    : formatRelativeTime(report.created_at);
 
-      {report.text ? <p className="report-text">{report.text}</p> : null}
-      {report.image_url ? (
-        <img src={report.image_url} alt={report.type} className="report-image" />
-      ) : null}
-    </div>
+  return (
+    <li className="report-story-item">
+      <div>
+        {eventLabel} {timeLabel}
+      </div>
+      {report.text ? <div className="report-story-comment">{report.text}</div> : null}
+    </li>
   );
 }

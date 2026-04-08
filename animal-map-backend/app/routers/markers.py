@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from app import models, schemas
 from app.database import SessionLocal
 from app.validation import validate_animal_image, validate_description
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from geoalchemy2 import Geometry
 from sqlalchemy import cast, func
 from sqlalchemy.orm import Session
@@ -153,19 +153,34 @@ def get_all_markers(db: Session = get_db_dep):
 
 
 @router.get("/{marker_id}/reports")
-def get_marker_reports(marker_id: str, db: Session = get_db_dep):
+def get_marker_reports(
+    marker_id: str,
+    limit: int = Query(default=20, ge=1, le=50),
+    cursor: str | None = None,
+    db: Session = get_db_dep,
+):
     marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
     if not marker:
         raise HTTPException(status_code=404, detail="Marker not found")
 
-    reports = (
-        db.query(models.Report)
-        .filter(models.Report.marker_id == marker.id)
-        .order_by(models.Report.created_at.desc())
+    q = db.query(models.Report).filter(models.Report.marker_id == marker.id)
+
+    if cursor:
+        try:
+            cursor_dt = datetime.fromisoformat(cursor.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="Invalid cursor timestamp") from exc
+        q = q.filter(models.Report.created_at < cursor_dt)
+
+    rows = (
+        q.order_by(models.Report.created_at.desc(), models.Report.id.desc())
+        .limit(limit + 1)
         .all()
     )
+    has_more = len(rows) > limit
+    reports = rows[:limit]
 
-    return [
+    items = [
         {
             "id": r.id,
             "marker_id": r.marker_id,
@@ -176,6 +191,8 @@ def get_marker_reports(marker_id: str, db: Session = get_db_dep):
         }
         for r in reports
     ]
+    next_cursor = items[-1]["created_at"] if has_more and items else None
+    return {"items": items, "next_cursor": next_cursor}
 
 
 @router.post("/{marker_id}/reports")
