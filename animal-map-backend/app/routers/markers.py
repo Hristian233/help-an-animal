@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from app import models, schemas
 from app.database import SessionLocal
 from app.validation import validate_animal_image, validate_description
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from geoalchemy2 import Geometry
 from sqlalchemy import cast, func
 from sqlalchemy.orm import Session
@@ -44,12 +44,12 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
 
     # Validate description if provided
     if VALIDATE_DESCRIPTIONS:
-        validate_description(marker.note, marker.animal)
+        validate_description(marker.key_info, marker.animal)
 
     # Only create marker if validation passes
     db_marker = models.Marker(
         animal=marker.animal,
-        note=marker.note,
+        key_info=marker.key_info,
         location=f"SRID=4326;POINT({marker.lng} {marker.lat})",
         image_url=marker.image_url,
     )
@@ -61,7 +61,7 @@ def create_marker(marker: schemas.MarkerCreate, db: Session = get_db_dep):
     return {
         "id": str(db_marker.public_id),
         "animal": db_marker.animal,
-        "note": db_marker.note,
+        "key_info": db_marker.key_info,
         "lat": marker.lat,
         "lng": marker.lng,
         "image_url": db_marker.image_url,
@@ -82,13 +82,13 @@ def update_marker(
 
     # Validate description if provided
     # If animal isn't supplied on PATCH, use the existing marker's animal.
-    if VALIDATE_DESCRIPTIONS and payload.note is not None:
-        validate_description(payload.note, payload.animal or db_marker.animal)
+    if VALIDATE_DESCRIPTIONS and payload.key_info is not None:
+        validate_description(payload.key_info, payload.animal or db_marker.animal)
 
     if payload.animal is not None:
         db_marker.animal = payload.animal
-    if payload.note is not None:
-        db_marker.note = payload.note
+    if payload.key_info is not None:
+        db_marker.key_info = payload.key_info
     if payload.image_url is not None:
         db_marker.image_url = payload.image_url
     if payload.lat is not None and payload.lng is not None:
@@ -115,7 +115,7 @@ def update_marker(
     return {
         "id": str(db_marker.public_id),
         "animal": db_marker.animal,
-        "note": db_marker.note,
+        "key_info": db_marker.key_info,
         "lat": lat or 0,
         "lng": lng or 0,
         "image_url": db_marker.image_url,
@@ -129,7 +129,7 @@ def get_all_markers(db: Session = get_db_dep):
     rows = db.query(
         models.Marker.public_id,
         models.Marker.animal,
-        models.Marker.note,
+        models.Marker.key_info,
         func.ST_Y(cast(models.Marker.location, Geometry)).label("lat"),
         func.ST_X(cast(models.Marker.location, Geometry)).label("lng"),
         models.Marker.image_url,
@@ -141,7 +141,7 @@ def get_all_markers(db: Session = get_db_dep):
         {
             "id": str(r.public_id),
             "animal": r.animal,
-            "note": r.note,
+            "key_info": r.key_info,
             "lat": r.lat,
             "lng": r.lng,
             "image_url": r.image_url,
@@ -150,3 +150,78 @@ def get_all_markers(db: Session = get_db_dep):
         }
         for r in rows
     ]
+
+
+@router.get("/{marker_id}/reports")
+def get_marker_reports(
+    marker_id: str,
+    limit: int = Query(default=20, ge=1, le=50),
+    cursor: str | None = None,
+    db: Session = get_db_dep,
+):
+    marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
+    if not marker:
+        raise HTTPException(status_code=404, detail="Marker not found")
+
+    q = db.query(models.Report).filter(models.Report.marker_id == marker.id)
+
+    if cursor:
+        try:
+            cursor_dt = datetime.fromisoformat(cursor.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="Invalid cursor timestamp") from exc
+        q = q.filter(models.Report.created_at < cursor_dt)
+
+    rows = (
+        q.order_by(models.Report.created_at.desc(), models.Report.id.desc()).limit(limit + 1).all()
+    )
+    has_more = len(rows) > limit
+    reports = rows[:limit]
+
+    items = [
+        {
+            "id": r.id,
+            "marker_id": r.marker_id,
+            "type": r.type.value if hasattr(r.type, "value") else str(r.type),
+            "text": r.text,
+            "image_url": r.image_url,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reports
+    ]
+    next_cursor = items[-1]["created_at"] if has_more and items else None
+    return {"items": items, "next_cursor": next_cursor}
+
+
+@router.post("/{marker_id}/reports")
+def create_marker_report(marker_id: str, payload: schemas.ReportCreate, db: Session = get_db_dep):
+    marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
+    if not marker:
+        raise HTTPException(status_code=404, detail="Marker not found")
+
+    try:
+        report_type = models.ReportType(payload.type)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="Invalid report type. Allowed: FEED, WATER, SEEN, PHOTO",
+        ) from exc
+
+    report = models.Report(
+        marker_id=marker.id,
+        type=report_type,
+        text=payload.text,
+        image_url=payload.image_url,
+    )
+    db.add(report)
+    db.commit()
+    db.refresh(report)
+
+    return {
+        "id": report.id,
+        "marker_id": report.marker_id,
+        "type": report.type.value if hasattr(report.type, "value") else str(report.type),
+        "text": report.text,
+        "image_url": report.image_url,
+        "created_at": report.created_at.isoformat() if report.created_at else None,
+    }

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class MarkerCreate(BaseModel):
     animal: str
-    note: str | None = None
+    key_info: str | None = None
     lat: float
     lng: float
     image_url: str | None = None
@@ -11,7 +11,7 @@ class MarkerCreate(BaseModel):
 
 class MarkerUpdate(BaseModel):
     animal: str | None = None
-    note: str | None = None
+    key_info: str | None = None
     lat: float | None = None
     lng: float | None = None
     image_url: str | None = None
@@ -20,7 +20,7 @@ class MarkerUpdate(BaseModel):
 class Marker(BaseModel):
     id: str
     animal: str
-    note: str | None
+    key_info: str | None
     lat: float
     lng: float
     image_url: str | None
@@ -29,3 +29,18 @@ class Marker(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ReportCreate(BaseModel):
+    type: str
+    text: str | None = None
+    image_url: str | None = None
+
+
+class Report(BaseModel):
+    id: int
+    marker_id: int
+    type: str
+    text: str | None = None
+    image_url: str | None = None
+    created_at: str | None = None

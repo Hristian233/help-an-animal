@@ -51,7 +51,7 @@ describe("AddMarkerModal", () => {
     const initialMarker = {
       id: 1,
       animal: "fox",
-      note: "Found in park",
+      key_info: "Found in park",
       lat: 42.7,
       lng: 23.3,
       image_url: "https://example.com/fox.png",
@@ -96,7 +96,7 @@ describe("AddMarkerModal", () => {
     const initialMarker = {
       id: 42,
       animal: "dog",
-      note: "Friendly",
+      key_info: "Friendly",
       lat: 42.7,
       lng: 23.3,
       image_url: "https://example.com/dog.png",
@@ -114,7 +114,7 @@ describe("AddMarkerModal", () => {
 
     expect(onUpdate).toHaveBeenCalledWith(42, {
       animal: "dog",
-      note: "Updated note",
+      key_info: "Updated note",
       lat: 42.7,
       lng: 23.3,
       image_url: "https://example.com/dog.png",
@@ -140,7 +140,7 @@ describe("AddMarkerModal", () => {
     await vi.waitFor(() => {
       expect(defaultProps.onSave).toHaveBeenCalledWith({
         animal: "fox",
-        note: "A fox",
+        key_info: "A fox",
         lat: 42.7,
         lng: 23.3,
         image_url: "https://storage.example.com/image.png",

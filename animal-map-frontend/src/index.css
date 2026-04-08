@@ -363,7 +363,8 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       700px circle at 30% 20%,
       rgba(22, 163, 74, 0.18),
       transparent 55%
@@ -455,8 +456,6 @@ button:focus-visible {
 }
 
 .info-window-action-btn {
-  width: 32px;
-  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -466,6 +465,17 @@ button:focus-visible {
   color: #5f6368;
   cursor: pointer;
   padding: 0;
+}
+
+.info-window-action-btn--sm {
+  width: 32px;
+  height: 32px;
+}
+
+.info-window-action-btn--md {
+  min-width: 64px;
+  height: 32px;
+  padding: 0 10px;
 }
 
 .info-window-action-btn:hover {
@@ -518,4 +528,162 @@ button:focus-visible {
 .backend-unavailable-retry:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.marker-modal-content {
+  width: 260px;
+  color: #111;
+}
+
+.marker-modal-header {
+  margin-bottom: 10px;
+}
+
+.marker-modal-main-image {
+  width: 100%;
+  height: 130px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f3f4f6;
+}
+
+.marker-modal-main-image-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.marker-modal-animal {
+  margin: 8px 0 0 0;
+  font-size: 16px;
+}
+
+.activity-preview-title {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  color: #111827;
+}
+
+.report-timeline {
+  overflow-y: visible;
+  margin-bottom: 10px;
+  padding-right: 4px;
+}
+
+.report-timeline-compact {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.report-story-list {
+  margin: 0 0 10px 0;
+  padding-left: 18px;
+}
+
+.report-story-item {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  color: #111827;
+}
+
+.report-story-comment {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.activity-view-all-btn {
+  width: 100%;
+  margin: 0 0 10px 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.activity-view-all-btn:hover {
+  background: #f3f4f6;
+}
+
+.report-empty {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.report-error {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+.marker-action-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.marker-action-btn {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.marker-action-btn:hover {
+  background: #f3f4f6;
+}
+
+.report-submit-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+.activity-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.activity-sheet {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+}
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.activity-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.activity-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.activity-load-more {
+  margin-top: 10px;
+  width: 100%;
 }
