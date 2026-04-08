@@ -27,7 +27,7 @@ class Marker(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
-class ReportType(str, enum.Enum):
+class ReportType(enum.StrEnum):
     FEED = "FEED"
     WATER = "WATER"
     SEEN = "SEEN"
