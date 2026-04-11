@@ -71,6 +71,8 @@ function App() {
   } | null>(null);
   const [isPickingLocation, setIsPickingLocation] = useState(false);
   const [isLocatingForEdit, setIsLocatingForEdit] = useState(false);
+  const [isCheckingMarkerProximity, setIsCheckingMarkerProximity] =
+    useState(false);
   const [canEditSelectedMarker, setCanEditSelectedMarker] = useState(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(true);
@@ -84,6 +86,28 @@ function App() {
   });
   const t = useT();
   const { showToast } = useToast();
+
+  const fetchUserPosition = useCallback((): Promise<{
+    lat: number;
+    lng: number;
+  } | null> => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) =>
+          resolve({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          }),
+        () => resolve(null),
+        { enableHighAccuracy: true },
+      );
+    });
+  }, []);
+
   const handleAddAnimal = () => {
     if (!navigator.geolocation) {
       alert("Geolocation is not supported.");
@@ -196,27 +220,40 @@ function App() {
     setCanEditSelectedMarker(distance <= 100);
   }, [selectedMarker, userLocation]);
 
+  useEffect(() => {
+    if (!selectedMarker) {
+      setIsCheckingMarkerProximity(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      setIsCheckingMarkerProximity(true);
+      const pos = await fetchUserPosition();
+      if (cancelled) return;
+      if (pos) {
+        setUserLocation(pos);
+      }
+      setIsCheckingMarkerProximity(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedMarker, fetchUserPosition]);
+
   const centerOnMyLocation = async () => {
     setIsActionLoading(true);
     try {
-      await new Promise<void>((resolve) => {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-
-            setUserLocation({ lat, lng });
-
-            map?.panTo({ lat, lng });
-            if ((map?.getZoom() ?? 0) < 14) map?.setZoom(15);
-            resolve();
-          },
-          () => {
-            alert("Cannot get your location.");
-            resolve();
-          },
-        );
-      });
+      const pos = await fetchUserPosition();
+      if (!pos) {
+        alert("Cannot get your location.");
+        return;
+      }
+      setUserLocation(pos);
+      map?.panTo(pos);
+      if ((map?.getZoom() ?? 0) < 14) map?.setZoom(15);
     } finally {
       setIsActionLoading(false);
     }
@@ -272,36 +309,33 @@ function App() {
     setIsLocatingForEdit(false);
   };
 
-  const handleEditInfoClick = (marker: MarkerType) => {
-    if (!userLocation) {
-      showToast(t("updateRequirements"));
-    }
-
+  const handleEditInfoClick = async (marker: MarkerType) => {
     if (!navigator.geolocation) {
       showToast(t("errorLocation"));
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const currentLat = pos.coords.latitude;
-        const currentLng = pos.coords.longitude;
-        setUserLocation({ lat: currentLat, lng: currentLng });
+    const pos = await fetchUserPosition();
+    if (!pos) {
+      showToast(t("errorLocation"));
+      return;
+    }
 
-        const distance = google.maps.geometry.spherical.computeDistanceBetween(
-          new google.maps.LatLng(currentLat, currentLng),
-          new google.maps.LatLng(marker.lat, marker.lng),
-        );
+    setUserLocation(pos);
 
-        if (distance > 100) {
-          showToast(t("tooFar"));
-        }
-      },
-      () => {
-        showToast(t("errorLocation"));
-      },
-      { enableHighAccuracy: true },
+    if (!window.google?.maps?.geometry?.spherical) {
+      showToast(t("updateRequirements"));
+      return;
+    }
+
+    const distance = google.maps.geometry.spherical.computeDistanceBetween(
+      new google.maps.LatLng(pos.lat, pos.lng),
+      new google.maps.LatLng(marker.lat, marker.lng),
     );
+
+    if (distance > 100) {
+      showToast(t("tooFar"));
+    }
   };
 
   const handleCopyMarkerLink = async (marker: MarkerType) => {
@@ -620,10 +654,14 @@ function App() {
                 <button
                   type="button"
                   onClick={() => handleStartEditing(selectedMarker)}
-                  disabled={!canEditSelectedMarker || isLocatingForEdit}
+                  disabled={
+                    isCheckingMarkerProximity ||
+                    !canEditSelectedMarker ||
+                    isLocatingForEdit
+                  }
                   className="marker-update-btn"
                 >
-                  {isLocatingForEdit ? (
+                  {isCheckingMarkerProximity || isLocatingForEdit ? (
                     <span
                       style={{
                         display: "inline-block",
