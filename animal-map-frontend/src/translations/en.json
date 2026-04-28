@@ -40,6 +40,21 @@
     "loadMore": "Load more",
     "loadingMore": "Loading..."
   },
+  "actionModal": {
+    "add": "Add",
+    "textOptional": "Text (optional)",
+    "imageOptional": "Image (optional)",
+    "submit": "Submit",
+    "submitError": "Could not add report. Please try again."
+  },
+  "reportItem": {
+    "events": {
+      "feed": "fed",
+      "water": "watered",
+      "seen": "seen",
+      "photo": "photo"
+    }
+  },
   "modal": {
     "addAnimal": "Add Animal",
     "animalType": "Animal Type",

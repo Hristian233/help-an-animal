@@ -25,8 +25,8 @@
     "addAnimal": "Добави животно"
   },
   "actionBar": {
-    "feed": "Нахрани",
-    "water": "Дай вода",
+    "feed": "Нахранено",
+    "water": "Напоено",
     "seen": "Видяно"
   },
   "markerModal": {
@@ -38,6 +38,21 @@
     "back": "Назад",
     "loadMore": "Зареди още",
     "loadingMore": "Зареждане..."
+  },
+  "actionModal": {
+    "add": "Добави",
+    "textOptional": "Текст (по желание)",
+    "imageOptional": "Снимка (по желание)",
+    "submit": "Изпрати",
+    "submitError": "Неуспешно добавяне на доклад. Опитайте отново."
+  },
+  "reportItem": {
+    "events": {
+      "feed": "Нахранено",
+      "water": "Напоено",
+      "seen": "Видяно",
+      "photo": "снимка"
+    }
   },
   "editAnimal": "Редактирай животно",
   "modal": {

@@ -1,4 +1,5 @@
 import { formatDate } from "../utils/formatDate";
+import { useT } from "../hooks/useTranslation";
 
 export type ReportType = "FEED" | "WATER" | "SEEN" | "PHOTO";
 
@@ -33,12 +34,14 @@ function formatRelativeTime(isoDate: string): string {
 }
 
 export function ReportItem({ report, absoluteTime = false }: ReportItemProps) {
-  const eventLabel =
-    report.type === "FEED"
-      ? "fed"
-      : report.type === "WATER"
-        ? "watered"
-        : "seen";
+  const t = useT();
+  const eventLabelByType: Record<ReportType, string> = {
+    FEED: t("reportItem.events.feed"),
+    WATER: t("reportItem.events.water"),
+    SEEN: t("reportItem.events.seen"),
+    PHOTO: t("reportItem.events.photo"),
+  };
+  const eventLabel = eventLabelByType[report.type];
   const timeLabel = absoluteTime
     ? formatDate(report.created_at)
     : formatRelativeTime(report.created_at);
@@ -48,7 +51,9 @@ export function ReportItem({ report, absoluteTime = false }: ReportItemProps) {
       <div>
         {eventLabel} {timeLabel}
       </div>
-      {report.text ? <div className="report-story-comment">{report.text}</div> : null}
+      {report.text ? (
+        <div className="report-story-comment">{report.text}</div>
+      ) : null}
     </li>
   );
 }
