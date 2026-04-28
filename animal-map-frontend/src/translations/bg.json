@@ -24,6 +24,14 @@
     "checkNearby": "Провери наблизо",
     "addAnimal": "Добави животно"
   },
+  "actionBar": {
+    "feed": "Нахрани",
+    "water": "Дай вода",
+    "seen": "Видяно"
+  },
+  "markerModal": {
+    "lastActivity": "Последна активност"
+  },
   "editAnimal": "Редактирай животно",
   "modal": {
     "addAnimal": "Добави животно",

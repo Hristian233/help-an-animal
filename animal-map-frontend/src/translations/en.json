@@ -25,6 +25,14 @@
     "checkNearby": "Check Nearby",
     "addAnimal": "Add Animal"
   },
+  "actionBar": {
+    "feed": "Feed",
+    "water": "Water",
+    "seen": "Seen"
+  },
+  "markerModal": {
+    "lastActivity": "Last activity"
+  },
   "modal": {
     "addAnimal": "Add Animal",
     "animalType": "Animal Type",

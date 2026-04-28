@@ -6,6 +6,7 @@ import { ActivityHistoryModal } from "./ActivityHistoryModal";
 import { MarkerHeader } from "./MarkerHeader";
 import { ReportTimeline } from "./ReportTimeline";
 import type { Report, ReportType } from "./ReportItem";
+import { useT } from "../hooks/useTranslation";
 
 type Marker = {
   id: string | number;
@@ -21,6 +22,7 @@ type MarkerModalProps = {
 };
 
 export function MarkerModal({ marker, onClose }: MarkerModalProps) {
+  const t = useT();
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
@@ -136,7 +138,7 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
       </div>
 
       <MarkerHeader animal={marker.animal} imageUrl={marker.image_url} />
-      <h4 className="activity-preview-title">Last activity</h4>
+      <h4 className="activity-preview-title">{t("markerModal.lastActivity")}</h4>
       <ReportTimeline
         reports={reports}
         isLoading={isLoadingReports}
