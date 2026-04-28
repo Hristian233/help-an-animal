@@ -31,7 +31,14 @@
     "seen": "Seen"
   },
   "markerModal": {
-    "lastActivity": "Last activity"
+    "lastActivity": "Last activity",
+    "viewAllActivity": "View all activity"
+  },
+  "activityHistory": {
+    "title": "All activity",
+    "back": "Back",
+    "loadMore": "Load more",
+    "loadingMore": "Loading..."
   },
   "modal": {
     "addAnimal": "Add Animal",

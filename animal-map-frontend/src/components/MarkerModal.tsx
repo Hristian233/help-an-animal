@@ -151,7 +151,7 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
           className="activity-view-all-btn"
           onClick={() => setShowAllActivity(true)}
         >
-          View all activity
+          {t("markerModal.viewAllActivity")}
         </button>
       ) : null}
       <ActionBar onActionClick={setActiveReportType} />

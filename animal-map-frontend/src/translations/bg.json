@@ -30,7 +30,14 @@
     "seen": "Видяно"
   },
   "markerModal": {
-    "lastActivity": "Последна активност"
+    "lastActivity": "Последна активност",
+    "viewAllActivity": "Виж цялата активност"
+  },
+  "activityHistory": {
+    "title": "Цялата активност",
+    "back": "Назад",
+    "loadMore": "Зареди още",
+    "loadingMore": "Зареждане..."
   },
   "editAnimal": "Редактирай животно",
   "modal": {
