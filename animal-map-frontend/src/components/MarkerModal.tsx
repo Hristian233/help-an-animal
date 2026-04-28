@@ -114,7 +114,16 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
             aria-label="Copy link"
             title="Copy link"
           >
-            Link
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4V7h4c2.76 0 5 2.24 5 5s-2.24 5-5 5h-4v-1.9h4c1.71 0 3.1-1.39 3.1-3.1s-1.39-3.1-3.1-3.1z" />
+            </svg>
           </button>
           <button
             type="button"
@@ -123,7 +132,16 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
             aria-label="Directions"
             title="Directions"
           >
-            Go
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path d="M12 2L4.5 20.29l1.41.71L12 18l6.09 3 .71-1.41L12 2z" />
+            </svg>
           </button>
         </div>
         <button
