@@ -52,6 +52,12 @@
       "water": "Напоено",
       "seen": "Видяно",
       "photo": "снимка"
+    },
+    "time": {
+      "justNow": "току-що",
+      "minutesAgo": "преди {count} минути",
+      "hoursAgo": "преди {count} часа",
+      "daysAgo": "преди {count} дни"
     }
   },
   "editAnimal": "Редактирай животно",

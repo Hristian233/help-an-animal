@@ -17,20 +17,25 @@ type ReportItemProps = {
   absoluteTime?: boolean;
 };
 
-function formatRelativeTime(isoDate: string): string {
+function formatRelativeTime(
+  isoDate: string,
+  t: (key: string) => string,
+): string {
   const reportDate = new Date(isoDate).getTime();
   const now = Date.now();
   const diffMs = Math.max(0, now - reportDate);
 
   const minutes = Math.floor(diffMs / (1000 * 60));
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t("reportItem.time.justNow");
+  if (minutes < 60)
+    return t("reportItem.time.minutesAgo").replace("{count}", String(minutes));
 
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24)
+    return t("reportItem.time.hoursAgo").replace("{count}", String(hours));
 
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return t("reportItem.time.daysAgo").replace("{count}", String(days));
 }
 
 export function ReportItem({ report, absoluteTime = false }: ReportItemProps) {
@@ -44,7 +49,7 @@ export function ReportItem({ report, absoluteTime = false }: ReportItemProps) {
   const eventLabel = eventLabelByType[report.type];
   const timeLabel = absoluteTime
     ? formatDate(report.created_at)
-    : formatRelativeTime(report.created_at);
+    : formatRelativeTime(report.created_at, t);
 
   return (
     <li className="report-story-item">
