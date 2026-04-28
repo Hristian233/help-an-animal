@@ -85,49 +85,60 @@ export function ActionModal({
 
   return (
     <>
-      <div className="modal-overlay" onClick={isSaving ? undefined : onClose}></div>
-      <div className="modal-box">
-        <button className="modal-close" onClick={onClose} disabled={isSaving}>
-          ×
-        </button>
-        <h3 className="modal-title">Add {reportType}</h3>
+      <div
+        className="modal-overlay action-modal-overlay"
+        onClick={isSaving ? undefined : onClose}
+      ></div>
+      <div className="modal-box action-modal-box">
+        <div className="action-modal-content">
+          <div className="action-modal-header">
+            <h3 className="modal-title">Add {reportType}</h3>
+            <button
+              className="modal-close action-modal-close"
+              onClick={onClose}
+              disabled={isSaving}
+            >
+              ×
+            </button>
+          </div>
 
-        <label className="modal-label">Text (optional)</label>
-        <textarea
-          className="modal-textarea"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={isSaving}
-        />
-
-        <label className="modal-label">Image (optional)</label>
-        <input
-          type="file"
-          accept="image/*"
-          className="modal-file-input"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          disabled={isSaving}
-        />
-
-        {error ? <p className="report-submit-error">{error}</p> : null}
-
-        <div className="modal-actions">
-          <button
-            type="button"
-            className="modal-btn cancel"
-            onClick={onClose}
+          <label className="modal-label">Text (optional)</label>
+          <textarea
+            className="modal-textarea"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
             disabled={isSaving}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="modal-btn save"
-            onClick={handleSubmit}
+          />
+
+          <label className="modal-label">Image (optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            className="modal-file-input"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             disabled={isSaving}
-          >
-            Submit
-          </button>
+          />
+
+          {error ? <p className="report-submit-error">{error}</p> : null}
+
+          <div className="modal-actions">
+            <button
+              type="button"
+              className="modal-btn cancel"
+              onClick={onClose}
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="modal-btn save"
+              onClick={handleSubmit}
+              disabled={isSaving}
+            >
+              Submit
+            </button>
+          </div>
         </div>
       </div>
     </>

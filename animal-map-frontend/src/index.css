@@ -535,6 +535,7 @@ button:focus-visible {
   width: 100%;
   height: 414px;
   box-sizing: border-box;
+  position: relative;
   color: #111;
 }
 
@@ -650,6 +651,58 @@ button:focus-visible {
   margin: 0;
   color: #b91c1c;
   font-size: 12px;
+}
+
+.action-modal-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.72);
+  z-index: 20;
+}
+
+.action-modal-box {
+  inset: 0;
+  height: 100%;
+  transform: none;
+  border-radius: 0;
+  box-sizing: border-box;
+  z-index: 21;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+}
+
+.action-modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.action-modal-header .modal-title {
+  text-align: left;
+  font-size: 18px;
+}
+
+.action-modal-close {
+  position: static;
+  top: auto;
+  right: auto;
+  width: 28px;
+  font-size: 20px;
+  line-height: 1;
+  flex: 0 0 auto;
 }
 
 .activity-overlay {
