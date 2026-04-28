@@ -8,7 +8,6 @@ const ACTIONS: Array<{ type: ReportType; label: string }> = [
   { type: "FEED", label: "Feed" },
   { type: "WATER", label: "Water" },
   { type: "SEEN", label: "Seen" },
-  { type: "PHOTO", label: "Add Photo" },
 ];
 
 export function ActionBar({ onActionClick }: ActionBarProps) {

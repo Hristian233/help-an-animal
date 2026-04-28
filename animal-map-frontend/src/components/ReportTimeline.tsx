@@ -6,7 +6,6 @@ type ReportTimelineProps = {
   errorMessage: string | null;
   maxItems?: number;
   absoluteTime?: boolean;
-  compact?: boolean;
 };
 
 export function ReportTimeline({
@@ -15,7 +14,6 @@ export function ReportTimeline({
   errorMessage,
   maxItems,
   absoluteTime = false,
-  compact = false,
 }: ReportTimelineProps) {
   const eventReports = reports.filter(
     (report) => report.type === "FEED" || report.type === "WATER" || report.type === "SEEN",
@@ -29,11 +27,7 @@ export function ReportTimeline({
     return <p className="report-empty">No feed/water/seen events yet.</p>;
 
   return (
-    <ul
-      className={`report-timeline report-story-list ${
-        compact ? "report-timeline-compact" : ""
-      }`}
-    >
+    <ul className="report-timeline report-story-list">
       {visibleReports.map((report) => (
         <ReportItem
           key={String(report.id)}

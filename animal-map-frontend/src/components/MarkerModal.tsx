@@ -142,7 +142,6 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
         isLoading={isLoadingReports}
         errorMessage={reportsError}
         maxItems={3}
-        compact
       />
       {activityCount > 3 ? (
         <button

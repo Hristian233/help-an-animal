@@ -531,7 +531,10 @@ button:focus-visible {
 }
 
 .marker-modal-content {
-  width: 260px;
+  max-width: 230px;
+  width: 100%;
+  height: 414px;
+  box-sizing: border-box;
   color: #111;
 }
 
@@ -540,17 +543,22 @@ button:focus-visible {
 }
 
 .marker-modal-main-image {
-  width: 100%;
-  height: 130px;
+  width: 200px;
+  height: 266px;
   border-radius: 8px;
   object-fit: cover;
   background: #f3f4f6;
+  display: block;
+  margin: 0 auto;
 }
 
 .marker-modal-main-image-empty {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 200px;
+  height: 266px;
+  margin: 0 auto;
   color: #6b7280;
   font-size: 12px;
 }
@@ -570,11 +578,6 @@ button:focus-visible {
   overflow-y: visible;
   margin-bottom: 10px;
   padding-right: 4px;
-}
-
-.report-timeline-compact {
-  max-height: 220px;
-  overflow-y: auto;
 }
 
 .report-story-list {
@@ -623,23 +626,24 @@ button:focus-visible {
 }
 
 .marker-action-bar {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
 .marker-action-btn {
-  border: 1px solid #d1d5db;
+  border: 1px solid #3b82f6;
   border-radius: 8px;
-  background: #fff;
-  color: #111827;
+  background: #3b82f6;
+  color: #fff;
   padding: 6px 8px;
   font-size: 12px;
   font-weight: 600;
 }
 
 .marker-action-btn:hover {
-  background: #f3f4f6;
+  background: #2563eb;
+  border-color: #2563eb;
 }
 
 .report-submit-error {
