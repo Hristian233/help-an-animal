@@ -60,6 +60,10 @@
       "daysAgo": "преди {count} дни"
     }
   },
+  "reportTimeline": {
+    "loading": "Зареждане...",
+    "empty": "Все още няма \n регистрирани събития."
+  },
   "editAnimal": "Редактирай животно",
   "modal": {
     "addAnimal": "Добави животно",

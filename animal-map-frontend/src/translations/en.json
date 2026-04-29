@@ -61,6 +61,10 @@
       "daysAgo": "{count}d ago"
     }
   },
+  "reportTimeline": {
+    "loading": "Loading reports...",
+    "empty": "No feed/water/seen events yet."
+  },
   "modal": {
     "addAnimal": "Add Animal",
     "animalType": "Animal Type",
