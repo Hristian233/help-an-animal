@@ -43,3 +43,17 @@ class Report(Base):
     text = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class MarkerImage(Base):
+    __tablename__ = "marker_images"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    marker_id = Column(
+        Integer,
+        ForeignKey("markers.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    image_url = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
