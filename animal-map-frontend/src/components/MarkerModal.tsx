@@ -22,12 +22,19 @@ type MarkerModalProps = {
   onClose: () => void;
 };
 
+type GalleryImage = {
+  id: number;
+  image_url: string;
+  created_at: string | null;
+};
+
 export function MarkerModal({ marker, onClose }: MarkerModalProps) {
   const t = useT();
   const { showToast } = useToast();
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
   const [activeReportType, setActiveReportType] = useState<ReportType | null>(
     null,
   );
@@ -65,9 +72,34 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
     }
   }, [marker.id]);
 
+  const loadGallery = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `${API_URL}/markers/${String(marker.id)}/images`,
+      );
+      if (!res.ok) {
+        setGalleryUrls([]);
+        return;
+      }
+      const data = (await res.json()) as { items?: GalleryImage[] };
+      if (!Array.isArray(data.items)) {
+        setGalleryUrls([]);
+        return;
+      }
+      setGalleryUrls(data.items.map((item) => item.image_url));
+    } catch {
+      setGalleryUrls([]);
+    }
+  }, [marker.id]);
+
+  const handleReportSubmitted = useCallback(async () => {
+    await Promise.all([loadReports(), loadGallery()]);
+  }, [loadReports, loadGallery]);
+
   useEffect(() => {
     loadReports();
-  }, [loadReports]);
+    loadGallery();
+  }, [loadReports, loadGallery]);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -196,7 +228,11 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
         </button>
       </div>
 
-      <MarkerHeader animal={marker.animal} imageUrl={marker.image_url} />
+      <MarkerHeader
+        animal={marker.animal}
+        imageUrl={marker.image_url}
+        galleryUrls={galleryUrls}
+      />
       <h4 className="activity-preview-title">
         {t("markerModal.lastActivity")}
       </h4>
@@ -238,7 +274,7 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
           reportType={activeReportType}
           markerId={marker.id}
           onClose={() => setActiveReportType(null)}
-          onSubmitted={loadReports}
+          onSubmitted={handleReportSubmitted}
         />
       ) : null}
       {showAllActivity ? (
