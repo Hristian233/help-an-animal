@@ -7,6 +7,7 @@ import { MarkerHeader } from "./MarkerHeader";
 import { ReportTimeline } from "./ReportTimeline";
 import type { Report, ReportType } from "./ReportItem";
 import { useT } from "../hooks/useTranslation";
+import { useToast } from "../hooks/useToast";
 
 type Marker = {
   id: string | number;
@@ -23,6 +24,7 @@ type MarkerModalProps = {
 
 export function MarkerModal({ marker, onClose }: MarkerModalProps) {
   const t = useT();
+  const { showToast } = useToast();
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
@@ -30,6 +32,7 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
     null,
   );
   const [showAllActivity, setShowAllActivity] = useState(false);
+  const [canReportActivity, setCanReportActivity] = useState(false);
 
   const loadReports = useCallback(async () => {
     setIsLoadingReports(true);
@@ -65,6 +68,35 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
   useEffect(() => {
     loadReports();
   }, [loadReports]);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setCanReportActivity(false);
+      return;
+    }
+    if (!window.google?.maps?.geometry?.spherical) {
+      setCanReportActivity(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude),
+          new google.maps.LatLng(marker.lat, marker.lng),
+        );
+        setCanReportActivity(distance <= 100);
+      },
+      () => {
+        setCanReportActivity(false);
+      },
+      { enableHighAccuracy: true },
+    );
+  }, [marker.lat, marker.lng]);
+
+  const handleUpdateInfoClick = () => {
+    showToast(t("tooFar"));
+  };
 
   const handleCopyMarkerLink = async () => {
     const url = new URL(window.location.href);
@@ -172,7 +204,24 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
           {t("markerModal.viewAllActivity")}
         </button>
       ) : null}
-      <ActionBar onActionClick={setActiveReportType} />
+      {canReportActivity ? (
+        <ActionBar onActionClick={setActiveReportType} />
+      ) : (
+        <div className="marker-edit-actions">
+          <button type="button" disabled className="marker-update-btn">
+            {t("update")}
+          </button>
+          <button
+            type="button"
+            onClick={handleUpdateInfoClick}
+            className="marker-info-btn"
+            title={t("updateInfo")}
+            aria-label={t("updateInfo")}
+          >
+            ?
+          </button>
+        </div>
+      )}
       {activeReportType ? (
         <ActionModal
           reportType={activeReportType}
