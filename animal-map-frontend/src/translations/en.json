@@ -65,9 +65,12 @@
     },
     "time": {
       "justNow": "just now",
-      "minutesAgo": "{count}m ago",
-      "hoursAgo": "{count}h ago",
-      "daysAgo": "{count}d ago"
+      "minuteAgo": "{count} minute ago",
+      "minutesAgo": "{count} minutes ago",
+      "hourAgo": "{count} hour ago",
+      "hoursAgo": "{count} hours ago",
+      "dayAgo": "{count} day ago",
+      "daysAgo": "{count} days ago"
     }
   },
   "reportTimeline": {

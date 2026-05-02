@@ -64,8 +64,11 @@
     },
     "time": {
       "justNow": "току-що",
+      "minuteAgo": "преди {count} минута",
       "minutesAgo": "преди {count} минути",
+      "hourAgo": "преди {count} час",
       "hoursAgo": "преди {count} часа",
+      "dayAgo": "преди {count} ден",
       "daysAgo": "преди {count} дни"
     }
   },
