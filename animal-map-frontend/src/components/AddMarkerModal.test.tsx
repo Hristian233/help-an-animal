@@ -43,13 +43,15 @@ describe("AddMarkerModal", () => {
     );
     const select = screen.getByRole("combobox");
     expect(select).toHaveValue("");
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    const textarea = screen.getByRole("textbox");
+    expect(textarea).toHaveValue("");
   });
 
   it("edit mode shows initialMarker data", () => {
     const initialMarker = {
       id: 1,
       animal: "fox",
+      key_info: "Found in park",
       lat: 42.7,
       lng: 23.3,
       image_url: "https://example.com/fox.png",
@@ -62,9 +64,10 @@ describe("AddMarkerModal", () => {
       />,
     );
     expect(screen.getByDisplayValue("Лисица")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Found in park")).toBeInTheDocument();
   });
 
-  it("changing animal updates form", async () => {
+  it("changing animal and note updates form", async () => {
     const user = userEvent.setup();
     renderWithToast(
       <AddMarkerModal {...defaultProps} onSave={defaultProps.onSave} />,
@@ -73,7 +76,9 @@ describe("AddMarkerModal", () => {
       screen.getByRole("combobox"),
       screen.getByRole("option", { name: "Котка" }),
     );
+    await user.type(screen.getByRole("textbox"), "Test");
     expect(screen.getByDisplayValue("Котка")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Test")).toBeInTheDocument();
   });
 
   it("calls onClose when Cancel is clicked", async () => {
@@ -91,6 +96,7 @@ describe("AddMarkerModal", () => {
     const initialMarker = {
       id: 42,
       animal: "dog",
+      key_info: "Friendly",
       lat: 42.7,
       lng: 23.3,
       image_url: "https://example.com/dog.png",
@@ -102,10 +108,13 @@ describe("AddMarkerModal", () => {
         onUpdate={onUpdate}
       />,
     );
+    await user.clear(screen.getByRole("textbox"));
+    await user.type(screen.getByRole("textbox"), "Updated note");
     await user.click(screen.getByRole("button", { name: /запази/i }));
 
     expect(onUpdate).toHaveBeenCalledWith(42, {
       animal: "dog",
+      key_info: "Updated note",
       lat: 42.7,
       lng: 23.3,
       image_url: "https://example.com/dog.png",
@@ -122,6 +131,7 @@ describe("AddMarkerModal", () => {
       screen.getByRole("combobox"),
       screen.getByRole("option", { name: "Лисица" }),
     );
+    await user.type(screen.getByRole("textbox"), "A fox");
     const fileInput = document.querySelector('input[type="file"]');
     expect(fileInput).toBeInTheDocument();
     await user.upload(fileInput as HTMLInputElement, file);
@@ -130,6 +140,7 @@ describe("AddMarkerModal", () => {
     await vi.waitFor(() => {
       expect(defaultProps.onSave).toHaveBeenCalledWith({
         animal: "fox",
+        key_info: "A fox",
         lat: 42.7,
         lng: 23.3,
         image_url: "https://storage.example.com/image.png",

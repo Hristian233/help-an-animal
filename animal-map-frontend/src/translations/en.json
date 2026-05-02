@@ -89,6 +89,8 @@
   "modal": {
     "addAnimal": "Add Animal",
     "animalType": "Animal Type",
+    "description": "Description",
+    "descriptionPlaceholder": "Color, size, behavior, location details…",
     "uploadImage": "Upload Image",
     "preview": "Preview",
     "save": "Save",

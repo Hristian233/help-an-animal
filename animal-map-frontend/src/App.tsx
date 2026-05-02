@@ -36,6 +36,7 @@ type MarkerType = {
 
 type MarkerPayload = {
   animal: string;
+  key_info: string | null;
   lat: number;
   lng: number;
   image_url: string | null;

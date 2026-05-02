@@ -89,6 +89,8 @@
   "modal": {
     "addAnimal": "Добави животно",
     "animalType": "Вид животно",
+    "description": "Описание",
+    "descriptionPlaceholder": "Цвят, размер, поведение, детайли за местоположението…",
     "uploadImage": "Качи снимка",
     "preview": "Преглед",
     "save": "Запази",
