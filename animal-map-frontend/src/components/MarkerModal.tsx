@@ -16,12 +16,16 @@ type Marker = {
   lat: number;
   lng: number;
   image_url?: string | null;
+  key_info?: string | null;
 };
 
 type MarkerModalProps = {
   marker: Marker;
   onClose: () => void;
+  onMarkerUpdated?: (updated: { id: string; key_info: string | null }) => void;
 };
+
+const DESCRIPTION_MAX_LENGTH = 280;
 
 type GalleryImage = {
   id: number;
@@ -29,7 +33,11 @@ type GalleryImage = {
   created_at: string | null;
 };
 
-export function MarkerModal({ marker, onClose }: MarkerModalProps) {
+export function MarkerModal({
+  marker,
+  onClose,
+  onMarkerUpdated,
+}: MarkerModalProps) {
   const t = useT();
   const { showToast } = useToast();
   const [reports, setReports] = useState<Report[]>([]);
@@ -43,6 +51,14 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
   const [showAllActivity, setShowAllActivity] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [canReportActivity, setCanReportActivity] = useState(false);
+  const [description, setDescription] = useState<string>(marker.key_info ?? "");
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState<string>("");
+  const [isSavingDescription, setIsSavingDescription] = useState(false);
+
+  useEffect(() => {
+    setDescription(marker.key_info ?? "");
+  }, [marker.id, marker.key_info]);
 
   const loadReports = useCallback(async () => {
     setIsLoadingReports(true);
@@ -138,6 +154,44 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
 
   const handleUpdateInfoClick = () => {
     showToast(t("tooFar"));
+  };
+
+  const handleStartEditDescription = () => {
+    setDescriptionDraft(description);
+    setIsEditingDescription(true);
+  };
+
+  const handleCancelEditDescription = () => {
+    setDescriptionDraft("");
+    setIsEditingDescription(false);
+  };
+
+  const handleSaveDescription = async () => {
+    if (isSavingDescription) return;
+
+    const trimmed = descriptionDraft.trim().slice(0, DESCRIPTION_MAX_LENGTH);
+    const nextValue = trimmed === "" ? null : trimmed;
+
+    setIsSavingDescription(true);
+    try {
+      const res = await fetch(`${API_URL}/markers/${String(marker.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key_info: nextValue }),
+      });
+      if (!res.ok) {
+        showToast(t("description.updateError"));
+        return;
+      }
+      setDescription(nextValue ?? "");
+      setIsEditingDescription(false);
+      setDescriptionDraft("");
+      onMarkerUpdated?.({ id: String(marker.id), key_info: nextValue });
+    } catch {
+      showToast(t("description.updateError"));
+    } finally {
+      setIsSavingDescription(false);
+    }
   };
 
   const handleCopyMarkerLink = async () => {
@@ -252,6 +306,87 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
           {`${t("markerModal.gallery")} (${galleryTotal})`}
         </button>
       ) : null}
+
+      <div className="marker-description">
+        <div className="marker-description-header">
+          <h4 className="marker-description-title">
+            {t("description.shortTitle")}
+          </h4>
+          {!isEditingDescription && canReportActivity ? (
+            <button
+              type="button"
+              className="marker-description-edit-btn"
+              onClick={handleStartEditDescription}
+              aria-label={t("description.edit")}
+              title={t("description.edit")}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
+
+        {isEditingDescription ? (
+          <div className="marker-description-editor">
+            <textarea
+              className="marker-description-textarea"
+              value={descriptionDraft}
+              onChange={(e) =>
+                setDescriptionDraft(
+                  e.target.value.slice(0, DESCRIPTION_MAX_LENGTH),
+                )
+              }
+              disabled={isSavingDescription}
+              maxLength={DESCRIPTION_MAX_LENGTH}
+              placeholder={t("description.placeholder")}
+              rows={3}
+              autoFocus
+            />
+            <div className="marker-description-editor-footer">
+              <span className="marker-description-counter">
+                {descriptionDraft.length}/{DESCRIPTION_MAX_LENGTH}
+              </span>
+              <div className="marker-description-editor-actions">
+                <button
+                  type="button"
+                  className="marker-description-cancel-btn"
+                  onClick={handleCancelEditDescription}
+                  disabled={isSavingDescription}
+                >
+                  {t("description.cancel")}
+                </button>
+                <button
+                  type="button"
+                  className="marker-description-save-btn"
+                  onClick={handleSaveDescription}
+                  disabled={isSavingDescription}
+                >
+                  {t("description.save")}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p
+            className={
+              description
+                ? "marker-description-text"
+                : "marker-description-text marker-description-text--empty"
+            }
+          >
+            {description || t("description.empty")}
+          </p>
+        )}
+      </div>
+
       <h4 className="activity-preview-title">
         {t("markerModal.lastActivity")}
       </h4>

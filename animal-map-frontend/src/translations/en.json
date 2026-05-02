@@ -35,6 +35,15 @@
     "viewAllActivity": "View all activity",
     "gallery": "Gallery"
   },
+  "description": {
+    "shortTitle": "Short title",
+    "empty": "No description yet.",
+    "placeholder": "Anything other volunteers should know? e.g. limps on back-right leg, friendly, has a red collar.",
+    "edit": "Edit description",
+    "save": "Save",
+    "cancel": "Cancel",
+    "updateError": "Could not update description. Please try again."
+  },
   "gallery": {
     "back": "Back",
     "empty": "No photos yet.",
@@ -80,7 +89,6 @@
   "modal": {
     "addAnimal": "Add Animal",
     "animalType": "Animal Type",
-    "description": "Description",
     "uploadImage": "Upload Image",
     "preview": "Preview",
     "save": "Save",

@@ -26,7 +26,7 @@ const defaultCenter = {
 type MarkerType = {
   id: string;
   animal: string;
-  key_info: string;
+  key_info: string | null;
   lat: number;
   lng: number;
   image_url: string;
@@ -36,7 +36,6 @@ type MarkerType = {
 
 type MarkerPayload = {
   animal: string;
-  key_info: string;
   lat: number;
   lng: number;
   image_url: string | null;
@@ -274,6 +273,15 @@ function App() {
     }
   };
 
+  const handleMarkerUpdated = useCallback((updated: Partial<MarkerType> & { id: string }) => {
+    setMarkers((prev) =>
+      prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+    );
+    setSelectedMarker((prev) =>
+      prev && prev.id === updated.id ? { ...prev, ...updated } : prev,
+    );
+  }, []);
+
   function mapBackendErrorToUserMessage(
     backendMessage: string,
     tFn: (key: string) => string,
@@ -380,6 +388,7 @@ function App() {
             <MarkerModal
               marker={selectedMarker}
               onClose={() => setSelectedMarker(null)}
+              onMarkerUpdated={handleMarkerUpdated}
             />
           </InfoWindow>
         )}
