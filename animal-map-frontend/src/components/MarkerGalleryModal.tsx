@@ -21,6 +21,7 @@ export function MarkerGalleryModal({
   onClose,
 }: MarkerGalleryModalProps) {
   const t = useT();
+  const animalLabel = t(`animals.${animal}`);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,11 +124,11 @@ export function MarkerGalleryModal({
                     type="button"
                     className="gallery-grid-item"
                     onClick={() => setLightboxIndex(idx)}
-                    aria-label={`${animal} ${idx + 1}`}
+                    aria-label={`${animalLabel} ${idx + 1}`}
                   >
                     <img
                       src={img.image_url}
-                      alt={animal}
+                      alt={animalLabel}
                       loading="lazy"
                       decoding="async"
                     />
@@ -176,7 +177,7 @@ export function MarkerGalleryModal({
 
           <img
             src={images[lightboxIndex].image_url}
-            alt={animal}
+            alt={animalLabel}
             className="lightbox-image"
             onClick={(e) => e.stopPropagation()}
           />
