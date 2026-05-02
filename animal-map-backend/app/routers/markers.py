@@ -215,9 +215,7 @@ def get_marker_images(
     base_q = db.query(models.MarkerImage).filter(models.MarkerImage.marker_id == marker.id)
     total = base_q.count()
 
-    rows_q = base_q.order_by(
-        models.MarkerImage.created_at.desc(), models.MarkerImage.id.desc()
-    )
+    rows_q = base_q.order_by(models.MarkerImage.created_at.desc(), models.MarkerImage.id.desc())
     if limit is not None:
         rows_q = rows_q.limit(limit)
     rows = rows_q.all()
