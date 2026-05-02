@@ -795,8 +795,7 @@ button:focus-visible {
 
 .report-empty {
   margin: 0 0 10px 0;
-  font-size: 13px;
-  color: #6b7280;
+  font-size: 12px;
   max-width: 200px;
 }
 
