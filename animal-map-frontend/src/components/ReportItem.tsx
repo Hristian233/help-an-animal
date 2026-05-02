@@ -1,4 +1,5 @@
 import { formatDate } from "../utils/formatDate";
+import { useT } from "../hooks/useTranslation";
 
 export type ReportType = "FEED" | "WATER" | "SEEN" | "PHOTO";
 
@@ -16,39 +17,53 @@ type ReportItemProps = {
   absoluteTime?: boolean;
 };
 
-function formatRelativeTime(isoDate: string): string {
+function formatRelativeTime(
+  isoDate: string,
+  t: (key: string) => string,
+): string {
   const reportDate = new Date(isoDate).getTime();
   const now = Date.now();
   const diffMs = Math.max(0, now - reportDate);
 
   const minutes = Math.floor(diffMs / (1000 * 60));
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t("reportItem.time.justNow");
+  if (minutes < 60) {
+    const key = minutes === 1 ? "reportItem.time.minuteAgo" : "reportItem.time.minutesAgo";
+    return t(key).replace("{count}", String(minutes));
+  }
 
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) {
+    const key = hours === 1 ? "reportItem.time.hourAgo" : "reportItem.time.hoursAgo";
+    return t(key).replace("{count}", String(hours));
+  }
 
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  const key = days === 1 ? "reportItem.time.dayAgo" : "reportItem.time.daysAgo";
+  return t(key).replace("{count}", String(days));
 }
 
 export function ReportItem({ report, absoluteTime = false }: ReportItemProps) {
-  const eventLabel =
-    report.type === "FEED"
-      ? "fed"
-      : report.type === "WATER"
-        ? "watered"
-        : "seen";
+  const t = useT();
+  const eventLabelByType: Record<ReportType, string> = {
+    FEED: t("reportItem.events.feed"),
+    WATER: t("reportItem.events.water"),
+    SEEN: t("reportItem.events.seen"),
+    PHOTO: t("reportItem.events.photo"),
+  };
+  const eventLabel = eventLabelByType[report.type];
   const timeLabel = absoluteTime
     ? formatDate(report.created_at)
-    : formatRelativeTime(report.created_at);
+    : formatRelativeTime(report.created_at, t);
 
   return (
     <li className="report-story-item">
       <div>
         {eventLabel} {timeLabel}
       </div>
-      {report.text ? <div className="report-story-comment">{report.text}</div> : null}
+      {report.text ? (
+        <div className="report-story-comment">{report.text}</div>
+      ) : null}
     </li>
   );
 }

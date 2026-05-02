@@ -25,10 +25,72 @@
     "checkNearby": "Check Nearby",
     "addAnimal": "Add Animal"
   },
+  "actionBar": {
+    "feed": "Feed",
+    "water": "Water",
+    "seen": "Seen"
+  },
+  "markerModal": {
+    "lastActivity": "Last activity",
+    "viewAllActivity": "View all activity",
+    "gallery": "Gallery"
+  },
+  "description": {
+    "shortTitle": "Short title",
+    "empty": "No description yet.",
+    "placeholder": "Anything other volunteers should know? e.g. limps on back-right leg, friendly, has a red collar.",
+    "edit": "Edit description",
+    "save": "Save",
+    "cancel": "Cancel",
+    "updateError": "Could not update description. Please try again."
+  },
+  "gallery": {
+    "back": "Back",
+    "empty": "No photos yet.",
+    "loadError": "Unable to load gallery.",
+    "loading": "Loading...",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "activityHistory": {
+    "title": "All activity",
+    "back": "Back",
+    "loadMore": "Load more",
+    "loadingMore": "Loading..."
+  },
+  "actionModal": {
+    "add": "Add",
+    "textOptional": "Text (optional)",
+    "imageOptional": "Image (optional)",
+    "submit": "Submit",
+    "submitError": "Could not add report. Please try again."
+  },
+  "reportItem": {
+    "events": {
+      "feed": "fed",
+      "water": "watered",
+      "seen": "seen",
+      "photo": "photo"
+    },
+    "time": {
+      "justNow": "just now",
+      "minuteAgo": "{count} minute ago",
+      "minutesAgo": "{count} minutes ago",
+      "hourAgo": "{count} hour ago",
+      "hoursAgo": "{count} hours ago",
+      "dayAgo": "{count} day ago",
+      "daysAgo": "{count} days ago"
+    }
+  },
+  "reportTimeline": {
+    "loading": "Loading reports...",
+    "empty": "No feed/water/seen events yet."
+  },
   "modal": {
     "addAnimal": "Add Animal",
     "animalType": "Animal Type",
     "description": "Description",
+    "descriptionPlaceholder": "Color, size, behavior, location details…",
     "uploadImage": "Upload Image",
     "preview": "Preview",
     "save": "Save",

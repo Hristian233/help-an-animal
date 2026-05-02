@@ -193,6 +193,68 @@ def get_marker_reports(
     return {"items": items, "next_cursor": next_cursor}
 
 
+# Reports of these types contribute their image to the marker's gallery.
+# Other report types (e.g. PHOTO) do not, and marker creation never does.
+GALLERY_REPORT_TYPES = {
+    models.ReportType.FEED,
+    models.ReportType.WATER,
+    models.ReportType.SEEN,
+}
+
+
+@router.get("/{marker_id}/images")
+def get_marker_images(
+    marker_id: str,
+    limit: int | None = Query(default=None, ge=1, le=50),
+    db: Session = get_db_dep,
+):
+    marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
+    if not marker:
+        raise HTTPException(status_code=404, detail="Marker not found")
+
+    base_q = db.query(models.MarkerImage).filter(models.MarkerImage.marker_id == marker.id)
+    total = base_q.count()
+
+    rows_q = base_q.order_by(models.MarkerImage.created_at.desc(), models.MarkerImage.id.desc())
+    if limit is not None:
+        rows_q = rows_q.limit(limit)
+    rows = rows_q.all()
+
+    return {
+        "total": total,
+        "items": [
+            {
+                "id": r.id,
+                "image_url": r.image_url,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in rows
+        ],
+    }
+
+
+@router.post("/{marker_id}/images")
+def create_marker_image(
+    marker_id: str,
+    payload: schemas.MarkerImageCreate,
+    db: Session = get_db_dep,
+):
+    marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
+    if not marker:
+        raise HTTPException(status_code=404, detail="Marker not found")
+
+    image = models.MarkerImage(marker_id=marker.id, image_url=payload.image_url)
+    db.add(image)
+    db.commit()
+    db.refresh(image)
+
+    return {
+        "id": image.id,
+        "image_url": image.image_url,
+        "created_at": image.created_at.isoformat() if image.created_at else None,
+    }
+
+
 @router.post("/{marker_id}/reports")
 def create_marker_report(marker_id: str, payload: schemas.ReportCreate, db: Session = get_db_dep):
     marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
@@ -214,6 +276,11 @@ def create_marker_report(marker_id: str, payload: schemas.ReportCreate, db: Sess
         image_url=payload.image_url,
     )
     db.add(report)
+
+    # Only FEED/WATER/SEEN reports contribute images to the gallery.
+    if payload.image_url and report_type in GALLERY_REPORT_TYPES:
+        db.add(models.MarkerImage(marker_id=marker.id, image_url=payload.image_url))
+
     db.commit()
     db.refresh(report)
 

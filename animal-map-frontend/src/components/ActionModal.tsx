@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { API_URL, IS_PRODUCTION } from "../config/env";
 import type { ReportType } from "./ReportItem";
+import { useT } from "../hooks/useTranslation";
 
 type ActionModalProps = {
   reportType: ReportType;
@@ -21,6 +22,13 @@ export function ActionModal({
   onClose,
   onSubmitted,
 }: ActionModalProps) {
+  const t = useT();
+  const reportTypeLabelByType: Record<ReportType, string> = {
+    FEED: t("actionBar.feed"),
+    WATER: t("actionBar.water"),
+    SEEN: t("actionBar.seen"),
+    PHOTO: t("reportItem.events.photo"),
+  };
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -63,21 +71,24 @@ export function ActionModal({
       if (text.trim()) payload.text = text.trim();
       if (image_url) payload.image_url = image_url;
 
-      const res = await fetch(`${API_URL}/markers/${String(markerId)}/reports`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${API_URL}/markers/${String(markerId)}/reports`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
 
       if (!res.ok) {
-        setError("Could not add report. Please try again.");
+        setError(t("actionModal.submitError"));
         return;
       }
 
       await onSubmitted();
       onClose();
     } catch {
-      setError("Could not add report. Please try again.");
+      setError(t("actionModal.submitError"));
     } finally {
       setIsSaving(false);
     }
@@ -85,49 +96,62 @@ export function ActionModal({
 
   return (
     <>
-      <div className="modal-overlay" onClick={isSaving ? undefined : onClose}></div>
-      <div className="modal-box">
-        <button className="modal-close" onClick={onClose} disabled={isSaving}>
-          ×
-        </button>
-        <h3 className="modal-title">Add {reportType}</h3>
+      <div
+        className="modal-overlay action-modal-overlay"
+        onClick={isSaving ? undefined : onClose}
+      ></div>
+      <div className="modal-box action-modal-box">
+        <div className="action-modal-content">
+          <div className="action-modal-header">
+            <h3 className="modal-title">{reportTypeLabelByType[reportType]}</h3>
+            <button
+              className="modal-close action-modal-close"
+              onClick={onClose}
+              disabled={isSaving}
+            >
+              ×
+            </button>
+          </div>
 
-        <label className="modal-label">Text (optional)</label>
-        <textarea
-          className="modal-textarea"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={isSaving}
-        />
-
-        <label className="modal-label">Image (optional)</label>
-        <input
-          type="file"
-          accept="image/*"
-          className="modal-file-input"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          disabled={isSaving}
-        />
-
-        {error ? <p className="report-submit-error">{error}</p> : null}
-
-        <div className="modal-actions">
-          <button
-            type="button"
-            className="modal-btn cancel"
-            onClick={onClose}
+          <label className="modal-label">{t("actionModal.textOptional")}</label>
+          <textarea
+            className="modal-textarea"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
             disabled={isSaving}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="modal-btn save"
-            onClick={handleSubmit}
+          />
+
+          <label className="modal-label">
+            {t("actionModal.imageOptional")}
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            className="modal-file-input"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             disabled={isSaving}
-          >
-            Submit
-          </button>
+          />
+
+          {error ? <p className="report-submit-error">{error}</p> : null}
+
+          <div className="modal-actions">
+            <button
+              type="button"
+              className="modal-btn cancel"
+              onClick={onClose}
+              disabled={isSaving}
+            >
+              {t("modal.cancel")}
+            </button>
+            <button
+              type="button"
+              className="modal-btn save"
+              onClick={handleSubmit}
+              disabled={isSaving}
+            >
+              {t("actionModal.submit")}
+            </button>
+          </div>
         </div>
       </div>
     </>

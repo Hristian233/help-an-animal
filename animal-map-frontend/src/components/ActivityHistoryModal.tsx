@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { API_URL } from "../config/env";
 import { ReportTimeline } from "./ReportTimeline";
 import type { Report } from "./ReportItem";
+import { useT } from "../hooks/useTranslation";
 
 type ReportsPage = {
   items: Report[];
@@ -17,6 +18,7 @@ export function ActivityHistoryModal({
   markerId,
   onClose,
 }: ActivityHistoryModalProps) {
+  const t = useT();
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -63,15 +65,15 @@ export function ActivityHistoryModal({
     <div className="activity-overlay">
       <div className="activity-sheet">
         <div className="activity-header">
-          <h2 className="activity-title">All activity</h2>
+          <h2 className="activity-title">{t("activityHistory.title")}</h2>
           <button
             type="button"
             className="info-window-action-btn info-window-action-btn--md"
             onClick={onClose}
-            aria-label="Back"
-            title="Back"
+            aria-label={t("activityHistory.back")}
+            title={t("activityHistory.back")}
           >
-            Back
+            {t("activityHistory.back")}
           </button>
         </div>
 
@@ -91,7 +93,9 @@ export function ActivityHistoryModal({
             disabled={isLoadingMore}
             onClick={() => fetchReports(nextCursor)}
           >
-            {isLoadingMore ? "Loading..." : "Load more"}
+            {isLoadingMore
+              ? t("activityHistory.loadingMore")
+              : t("activityHistory.loadMore")}
           </button>
         ) : null}
       </div>

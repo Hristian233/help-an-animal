@@ -3,9 +3,12 @@ import { API_URL } from "../config/env";
 import { ActionBar } from "./ActionBar";
 import { ActionModal } from "./ActionModal";
 import { ActivityHistoryModal } from "./ActivityHistoryModal";
+import { MarkerGalleryModal } from "./MarkerGalleryModal";
 import { MarkerHeader } from "./MarkerHeader";
 import { ReportTimeline } from "./ReportTimeline";
 import type { Report, ReportType } from "./ReportItem";
+import { useT } from "../hooks/useTranslation";
+import { useToast } from "../hooks/useToast";
 
 type Marker = {
   id: string | number;
@@ -13,21 +16,49 @@ type Marker = {
   lat: number;
   lng: number;
   image_url?: string | null;
+  key_info?: string | null;
 };
 
 type MarkerModalProps = {
   marker: Marker;
   onClose: () => void;
+  onMarkerUpdated?: (updated: { id: string; key_info: string | null }) => void;
 };
 
-export function MarkerModal({ marker, onClose }: MarkerModalProps) {
+const DESCRIPTION_MAX_LENGTH = 280;
+
+type GalleryImage = {
+  id: number;
+  image_url: string;
+  created_at: string | null;
+};
+
+export function MarkerModal({
+  marker,
+  onClose,
+  onMarkerUpdated,
+}: MarkerModalProps) {
+  const t = useT();
+  const { showToast } = useToast();
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [galleryTotal, setGalleryTotal] = useState(0);
   const [activeReportType, setActiveReportType] = useState<ReportType | null>(
     null,
   );
   const [showAllActivity, setShowAllActivity] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  const [canReportActivity, setCanReportActivity] = useState(false);
+  const [description, setDescription] = useState<string>(marker.key_info ?? "");
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState<string>("");
+  const [isSavingDescription, setIsSavingDescription] = useState(false);
+
+  useEffect(() => {
+    setDescription(marker.key_info ?? "");
+  }, [marker.id, marker.key_info]);
 
   const loadReports = useCallback(async () => {
     setIsLoadingReports(true);
@@ -60,9 +91,108 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
     }
   }, [marker.id]);
 
+  const loadGallery = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `${API_URL}/markers/${String(marker.id)}/images?limit=4`,
+      );
+      if (!res.ok) {
+        setGalleryUrls([]);
+        setGalleryTotal(0);
+        return;
+      }
+      const data = (await res.json()) as {
+        items?: GalleryImage[];
+        total?: number;
+      };
+      if (!Array.isArray(data.items)) {
+        setGalleryUrls([]);
+        setGalleryTotal(0);
+        return;
+      }
+      setGalleryUrls(data.items.map((item) => item.image_url));
+      setGalleryTotal(typeof data.total === "number" ? data.total : 0);
+    } catch {
+      setGalleryUrls([]);
+      setGalleryTotal(0);
+    }
+  }, [marker.id]);
+
+  const handleReportSubmitted = useCallback(async () => {
+    await Promise.all([loadReports(), loadGallery()]);
+  }, [loadReports, loadGallery]);
+
   useEffect(() => {
     loadReports();
-  }, [loadReports]);
+    loadGallery();
+  }, [loadReports, loadGallery]);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setCanReportActivity(false);
+      return;
+    }
+    if (!window.google?.maps?.geometry?.spherical) {
+      setCanReportActivity(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude),
+          new google.maps.LatLng(marker.lat, marker.lng),
+        );
+        setCanReportActivity(distance <= 100);
+      },
+      () => {
+        setCanReportActivity(false);
+      },
+      { enableHighAccuracy: true },
+    );
+  }, [marker.lat, marker.lng]);
+
+  const handleUpdateInfoClick = () => {
+    showToast(t("tooFar"));
+  };
+
+  const handleStartEditDescription = () => {
+    setDescriptionDraft(description);
+    setIsEditingDescription(true);
+  };
+
+  const handleCancelEditDescription = () => {
+    setDescriptionDraft("");
+    setIsEditingDescription(false);
+  };
+
+  const handleSaveDescription = async () => {
+    if (isSavingDescription) return;
+
+    const trimmed = descriptionDraft.trim().slice(0, DESCRIPTION_MAX_LENGTH);
+    const nextValue = trimmed === "" ? null : trimmed;
+
+    setIsSavingDescription(true);
+    try {
+      const res = await fetch(`${API_URL}/markers/${String(marker.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key_info: nextValue }),
+      });
+      if (!res.ok) {
+        showToast(t("description.updateError"));
+        return;
+      }
+      setDescription(nextValue ?? "");
+      setIsEditingDescription(false);
+      setDescriptionDraft("");
+      onMarkerUpdated?.({ id: String(marker.id), key_info: nextValue });
+    } catch {
+      showToast(t("description.updateError"));
+    } finally {
+      setIsSavingDescription(false);
+    }
+  };
 
   const handleCopyMarkerLink = async () => {
     const url = new URL(window.location.href);
@@ -112,7 +242,16 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
             aria-label="Copy link"
             title="Copy link"
           >
-            Link
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4V7h4c2.76 0 5 2.24 5 5s-2.24 5-5 5h-4v-1.9h4c1.71 0 3.1-1.39 3.1-3.1s-1.39-3.1-3.1-3.1z" />
+            </svg>
           </button>
           <button
             type="button"
@@ -121,7 +260,16 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
             aria-label="Directions"
             title="Directions"
           >
-            Go
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path d="M12 2L4.5 20.29l1.41.71L12 18l6.09 3 .71-1.41L12 2z" />
+            </svg>
           </button>
         </div>
         <button
@@ -131,18 +279,122 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
           aria-label="Close"
           title="Close"
         >
-          ×
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+          </svg>
         </button>
       </div>
 
-      <MarkerHeader animal={marker.animal} imageUrl={marker.image_url} />
-      <h4 className="activity-preview-title">Last activity</h4>
+      <MarkerHeader
+        animal={marker.animal}
+        imageUrl={marker.image_url}
+        galleryUrls={galleryUrls}
+      />
+      {galleryTotal > 4 ? (
+        <button
+          type="button"
+          className="gallery-view-all-btn"
+          onClick={() => setShowGallery(true)}
+        >
+          {`${t("markerModal.gallery")} (${galleryTotal})`}
+        </button>
+      ) : null}
+
+      <div className="marker-description">
+        <div className="marker-description-header">
+          <h4 className="marker-description-title">
+            {t("description.shortTitle")}
+          </h4>
+          {!isEditingDescription && canReportActivity ? (
+            <button
+              type="button"
+              className="marker-description-edit-btn"
+              onClick={handleStartEditDescription}
+              aria-label={t("description.edit")}
+              title={t("description.edit")}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
+
+        {isEditingDescription ? (
+          <div className="marker-description-editor">
+            <textarea
+              className="marker-description-textarea"
+              value={descriptionDraft}
+              onChange={(e) =>
+                setDescriptionDraft(
+                  e.target.value.slice(0, DESCRIPTION_MAX_LENGTH),
+                )
+              }
+              disabled={isSavingDescription}
+              maxLength={DESCRIPTION_MAX_LENGTH}
+              placeholder={t("description.placeholder")}
+              rows={3}
+              autoFocus
+            />
+            <div className="marker-description-editor-footer">
+              <span className="marker-description-counter">
+                {descriptionDraft.length}/{DESCRIPTION_MAX_LENGTH}
+              </span>
+              <div className="marker-description-editor-actions">
+                <button
+                  type="button"
+                  className="marker-description-cancel-btn"
+                  onClick={handleCancelEditDescription}
+                  disabled={isSavingDescription}
+                >
+                  {t("description.cancel")}
+                </button>
+                <button
+                  type="button"
+                  className="marker-description-save-btn"
+                  onClick={handleSaveDescription}
+                  disabled={isSavingDescription}
+                >
+                  {t("description.save")}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p
+            className={
+              description
+                ? "marker-description-text"
+                : "marker-description-text marker-description-text--empty"
+            }
+          >
+            {description || t("description.empty")}
+          </p>
+        )}
+      </div>
+
+      <h4 className="activity-preview-title">
+        {t("markerModal.lastActivity")}
+      </h4>
       <ReportTimeline
         reports={reports}
         isLoading={isLoadingReports}
         errorMessage={reportsError}
         maxItems={3}
-        compact
       />
       {activityCount > 3 ? (
         <button
@@ -150,22 +402,46 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
           className="activity-view-all-btn"
           onClick={() => setShowAllActivity(true)}
         >
-          View all activity
+          {t("markerModal.viewAllActivity")}
         </button>
       ) : null}
-      <ActionBar onActionClick={setActiveReportType} />
+      {canReportActivity ? (
+        <ActionBar onActionClick={setActiveReportType} />
+      ) : (
+        <div className="marker-edit-actions">
+          <button type="button" disabled className="marker-update-btn">
+            {t("update")}
+          </button>
+          <button
+            type="button"
+            onClick={handleUpdateInfoClick}
+            className="marker-info-btn"
+            title={t("updateInfo")}
+            aria-label={t("updateInfo")}
+          >
+            ?
+          </button>
+        </div>
+      )}
       {activeReportType ? (
         <ActionModal
           reportType={activeReportType}
           markerId={marker.id}
           onClose={() => setActiveReportType(null)}
-          onSubmitted={loadReports}
+          onSubmitted={handleReportSubmitted}
         />
       ) : null}
       {showAllActivity ? (
         <ActivityHistoryModal
           markerId={marker.id}
           onClose={() => setShowAllActivity(false)}
+        />
+      ) : null}
+      {showGallery ? (
+        <MarkerGalleryModal
+          markerId={marker.id}
+          animal={marker.animal}
+          onClose={() => setShowGallery(false)}
         />
       ) : null}
     </div>

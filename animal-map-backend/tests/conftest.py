@@ -1,7 +1,13 @@
-import pytest
-from app.database import Base, engine
-from app.main import app
-from fastapi.testclient import TestClient
+import os
+
+# Disable rate limiting during tests. Must be set before importing the app
+# because `app.rate_limit` reads this flag at module load time.
+os.environ.setdefault("TESTING", "1")
+
+import pytest  # noqa: E402
+from app.database import Base, engine  # noqa: E402
+from app.main import app  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)

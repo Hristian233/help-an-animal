@@ -44,3 +44,21 @@ class Report(BaseModel):
     text: str | None = None
     image_url: str | None = None
     created_at: str | None = None
+
+
+class MarkerImage(BaseModel):
+    id: int
+    image_url: str
+    created_at: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class MarkerImageList(BaseModel):
+    total: int
+    items: list[MarkerImage]
+
+
+class MarkerImageCreate(BaseModel):
+    image_url: str

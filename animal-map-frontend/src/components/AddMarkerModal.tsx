@@ -7,7 +7,7 @@ import { useToast } from "../hooks/useToast.js";
 type MarkerData = {
   id: string | number;
   animal: string;
-  key_info: string;
+  key_info?: string | null;
   lat: number;
   lng: number;
   image_url: string | null;
@@ -19,7 +19,7 @@ type AddMarkerModalProps = {
   onClose: () => void;
   onSave: (data: {
     animal: string;
-    key_info: string;
+    key_info: string | null;
     lat: number;
     lng: number;
     image_url: string | null;
@@ -29,7 +29,7 @@ type AddMarkerModalProps = {
     markerId: string | number,
     data: {
       animal: string;
-      key_info: string;
+      key_info: string | null;
       lat: number;
       lng: number;
       image_url: string | null;
@@ -94,10 +94,13 @@ export function AddMarkerModal({
         return;
       }
 
+      const trimmedKeyInfo = keyInfo.trim();
+      const key_info = trimmedKeyInfo === "" ? null : trimmedKeyInfo;
+
       if (isEdit && initialMarker && onUpdate) {
         const ok = await onUpdate(initialMarker.id, {
           animal,
-          key_info: keyInfo,
+          key_info,
           lat: initialMarker.lat,
           lng: initialMarker.lng,
           image_url,
@@ -106,7 +109,7 @@ export function AddMarkerModal({
       } else {
         const ok = await onSave({
           animal,
-          key_info: keyInfo,
+          key_info,
           lat,
           lng,
           image_url,
@@ -174,8 +177,8 @@ export function AddMarkerModal({
 
   const hasPreview = !!preview || !!(isEdit && initialMarker?.image_url);
   const isFormValid = isEdit
-    ? animal !== "" && keyInfo.trim() !== ""
-    : animal !== "" && keyInfo.trim() !== "" && (hasPreview || !!file);
+    ? animal !== ""
+    : animal !== "" && (hasPreview || !!file);
 
   return (
     <>
@@ -211,6 +214,7 @@ export function AddMarkerModal({
           className="modal-textarea"
           value={keyInfo}
           onChange={(e) => setKeyInfo(e.target.value)}
+          placeholder={t("modal.descriptionPlaceholder")}
           disabled={isSaving}
         />
 

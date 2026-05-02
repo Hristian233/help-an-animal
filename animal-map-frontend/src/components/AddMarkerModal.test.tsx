@@ -160,7 +160,6 @@ describe("AddMarkerModal", () => {
       screen.getByRole("combobox"),
       screen.getByRole("option", { name: "Лисица" }),
     );
-    await user.type(screen.getByRole("textbox"), "Note");
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(fileInput, largeFile);
     await user.click(screen.getByRole("button", { name: /запази/i }));
