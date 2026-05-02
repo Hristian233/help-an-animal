@@ -203,19 +203,27 @@ GALLERY_REPORT_TYPES = {
 
 
 @router.get("/{marker_id}/images")
-def get_marker_images(marker_id: str, db: Session = get_db_dep):
+def get_marker_images(
+    marker_id: str,
+    limit: int | None = Query(default=None, ge=1, le=50),
+    db: Session = get_db_dep,
+):
     marker = db.query(models.Marker).filter(models.Marker.public_id == marker_id).first()
     if not marker:
         raise HTTPException(status_code=404, detail="Marker not found")
 
-    rows = (
-        db.query(models.MarkerImage)
-        .filter(models.MarkerImage.marker_id == marker.id)
-        .order_by(models.MarkerImage.created_at.asc(), models.MarkerImage.id.asc())
-        .all()
+    base_q = db.query(models.MarkerImage).filter(models.MarkerImage.marker_id == marker.id)
+    total = base_q.count()
+
+    rows_q = base_q.order_by(
+        models.MarkerImage.created_at.desc(), models.MarkerImage.id.desc()
     )
+    if limit is not None:
+        rows_q = rows_q.limit(limit)
+    rows = rows_q.all()
 
     return {
+        "total": total,
         "items": [
             {
                 "id": r.id,
@@ -223,7 +231,7 @@ def get_marker_images(marker_id: str, db: Session = get_db_dep):
                 "created_at": r.created_at.isoformat() if r.created_at else None,
             }
             for r in rows
-        ]
+        ],
     }
 
 

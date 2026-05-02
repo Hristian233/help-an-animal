@@ -56,6 +56,7 @@ class MarkerImage(BaseModel):
 
 
 class MarkerImageList(BaseModel):
+    total: int
     items: list[MarkerImage]
 
 

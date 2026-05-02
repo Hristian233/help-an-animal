@@ -3,6 +3,7 @@ import { API_URL } from "../config/env";
 import { ActionBar } from "./ActionBar";
 import { ActionModal } from "./ActionModal";
 import { ActivityHistoryModal } from "./ActivityHistoryModal";
+import { MarkerGalleryModal } from "./MarkerGalleryModal";
 import { MarkerHeader } from "./MarkerHeader";
 import { ReportTimeline } from "./ReportTimeline";
 import type { Report, ReportType } from "./ReportItem";
@@ -35,10 +36,12 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [galleryTotal, setGalleryTotal] = useState(0);
   const [activeReportType, setActiveReportType] = useState<ReportType | null>(
     null,
   );
   const [showAllActivity, setShowAllActivity] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
   const [canReportActivity, setCanReportActivity] = useState(false);
 
   const loadReports = useCallback(async () => {
@@ -75,20 +78,27 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
   const loadGallery = useCallback(async () => {
     try {
       const res = await fetch(
-        `${API_URL}/markers/${String(marker.id)}/images`,
+        `${API_URL}/markers/${String(marker.id)}/images?limit=4`,
       );
       if (!res.ok) {
         setGalleryUrls([]);
+        setGalleryTotal(0);
         return;
       }
-      const data = (await res.json()) as { items?: GalleryImage[] };
+      const data = (await res.json()) as {
+        items?: GalleryImage[];
+        total?: number;
+      };
       if (!Array.isArray(data.items)) {
         setGalleryUrls([]);
+        setGalleryTotal(0);
         return;
       }
       setGalleryUrls(data.items.map((item) => item.image_url));
+      setGalleryTotal(typeof data.total === "number" ? data.total : 0);
     } catch {
       setGalleryUrls([]);
+      setGalleryTotal(0);
     }
   }, [marker.id]);
 
@@ -233,6 +243,15 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
         imageUrl={marker.image_url}
         galleryUrls={galleryUrls}
       />
+      {galleryTotal > 4 ? (
+        <button
+          type="button"
+          className="gallery-view-all-btn"
+          onClick={() => setShowGallery(true)}
+        >
+          {`${t("markerModal.gallery")} (${galleryTotal})`}
+        </button>
+      ) : null}
       <h4 className="activity-preview-title">
         {t("markerModal.lastActivity")}
       </h4>
@@ -281,6 +300,13 @@ export function MarkerModal({ marker, onClose }: MarkerModalProps) {
         <ActivityHistoryModal
           markerId={marker.id}
           onClose={() => setShowAllActivity(false)}
+        />
+      ) : null}
+      {showGallery ? (
+        <MarkerGalleryModal
+          markerId={marker.id}
+          animal={marker.animal}
+          onClose={() => setShowGallery(false)}
         />
       ) : null}
     </div>

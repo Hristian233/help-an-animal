@@ -1,5 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
-
 type MarkerHeaderProps = {
   imageUrl?: string | null;
   galleryUrls?: string[];
@@ -11,64 +9,33 @@ export function MarkerHeader({
   galleryUrls,
   animal,
 }: MarkerHeaderProps) {
-  const allImageUrls = useMemo(() => {
-    const urls: string[] = [];
-    if (imageUrl) urls.push(imageUrl);
-    if (galleryUrls) {
-      for (const url of galleryUrls) {
-        if (url) urls.push(url);
-      }
-    }
-    return urls;
-  }, [imageUrl, galleryUrls]);
-
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    if (activeIndex >= allImageUrls.length) {
-      setActiveIndex(0);
-    }
-  }, [allImageUrls.length, activeIndex]);
-
-  const activeUrl = allImageUrls[activeIndex];
+  const thumbs = (galleryUrls ?? []).slice(0, 4);
 
   return (
     <div className="marker-modal-header">
-      {activeUrl ? (
-        <img
-          src={activeUrl}
-          alt={animal}
-          className="marker-modal-main-image"
-        />
+      <h3 className="marker-modal-animal-name">{animal}</h3>
+
+      {imageUrl ? (
+        <img src={imageUrl} alt={animal} className="marker-modal-main-image" />
       ) : (
         <div className="marker-modal-main-image marker-modal-main-image-empty">
           No image
         </div>
       )}
 
-      {allImageUrls.length > 1 ? (
+      {thumbs.length > 0 ? (
         <div className="marker-modal-thumbs" role="list">
-          {allImageUrls.map((url, idx) => (
-            <button
+          {thumbs.map((url, idx) => (
+            <div
               key={`${idx}-${url}`}
-              type="button"
               role="listitem"
-              className={
-                idx === activeIndex
-                  ? "marker-modal-thumb marker-modal-thumb--active"
-                  : "marker-modal-thumb"
-              }
-              onClick={() => setActiveIndex(idx)}
-              aria-label={`Show image ${idx + 1} of ${allImageUrls.length}`}
-              aria-pressed={idx === activeIndex}
+              className="marker-modal-thumb"
             >
-              <img src={url} alt="" />
-            </button>
+              <img src={url} alt="" loading="lazy" decoding="async" />
+            </div>
           ))}
         </div>
       ) : null}
-
-      <h3 className="marker-modal-animal">{animal}</h3>
     </div>
   );
 }

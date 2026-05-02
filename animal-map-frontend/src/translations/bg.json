@@ -31,7 +31,16 @@
   },
   "markerModal": {
     "lastActivity": "Последна активност",
-    "viewAllActivity": "Виж цялата активност"
+    "viewAllActivity": "Виж цялата активност",
+    "gallery": "Галерия"
+  },
+  "gallery": {
+    "back": "Назад",
+    "empty": "Все още няма снимки.",
+    "loadError": "Неуспешно зареждане на галерията.",
+    "loading": "Зареждане...",
+    "previous": "Предишна",
+    "next": "Следваща"
   },
   "activityHistory": {
     "title": "Цялата активност",

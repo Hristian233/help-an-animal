@@ -32,7 +32,16 @@
   },
   "markerModal": {
     "lastActivity": "Last activity",
-    "viewAllActivity": "View all activity"
+    "viewAllActivity": "View all activity",
+    "gallery": "Gallery"
+  },
+  "gallery": {
+    "back": "Back",
+    "empty": "No photos yet.",
+    "loadError": "Unable to load gallery.",
+    "loading": "Loading...",
+    "previous": "Previous",
+    "next": "Next"
   },
   "activityHistory": {
     "title": "All activity",

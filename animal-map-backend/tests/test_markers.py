@@ -105,7 +105,7 @@ def test_get_marker_images_empty(client):
     response = client.get(f"/markers/{marker_id}/images")
     assert response.status_code == 200
     data = response.json()
-    assert data == {"items": []}
+    assert data == {"total": 0, "items": []}
 
 
 def test_get_marker_images_not_found(client):
@@ -206,3 +206,32 @@ def test_marker_creation_with_image_does_not_populate_gallery(client):
 
     gallery = client.get(f"/markers/{marker_id}/images").json()["items"]
     assert gallery == []
+
+
+def test_get_marker_images_with_limit_returns_newest_first(client):
+    marker_id = _create_marker(client)
+
+    for i in range(6):
+        add_resp = client.post(
+            f"/markers/{marker_id}/images",
+            json={"image_url": f"https://example.com/{i}.jpg"},
+        )
+        assert add_resp.status_code == 200
+
+    response = client.get(f"/markers/{marker_id}/images?limit=4")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 6
+    assert len(body["items"]) == 4
+    assert body["items"][0]["image_url"] == "https://example.com/5.jpg"
+    assert body["items"][3]["image_url"] == "https://example.com/2.jpg"
+
+
+def test_get_marker_images_limit_validation(client):
+    marker_id = _create_marker(client)
+
+    too_low = client.get(f"/markers/{marker_id}/images?limit=0")
+    assert too_low.status_code == 422
+
+    too_high = client.get(f"/markers/{marker_id}/images?limit=51")
+    assert too_high.status_code == 422

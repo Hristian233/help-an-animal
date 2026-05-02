@@ -564,15 +564,22 @@ button:focus-visible {
   font-size: 12px;
 }
 
+.marker-modal-animal-name {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  text-align: center;
+}
+
 .marker-modal-thumbs {
   display: flex;
+  justify-content: center;
   flex-wrap: nowrap;
   gap: 6px;
   margin: 8px auto 0 auto;
   padding: 2px 0;
   max-width: 200px;
-  overflow-x: auto;
-  scrollbar-width: thin;
 }
 
 .marker-modal-thumb {
@@ -580,20 +587,10 @@ button:focus-visible {
   width: 44px;
   height: 44px;
   padding: 0;
-  border: 2px solid transparent;
+  border: 1px solid #e5e7eb;
   border-radius: 6px;
   background: #f3f4f6;
-  cursor: pointer;
   overflow: hidden;
-  transition: border-color 0.15s ease, transform 0.1s ease;
-}
-
-.marker-modal-thumb:hover {
-  border-color: #d1d5db;
-}
-
-.marker-modal-thumb--active {
-  border-color: #2563eb;
 }
 
 .marker-modal-thumb img {
@@ -601,11 +598,6 @@ button:focus-visible {
   height: 100%;
   object-fit: cover;
   display: block;
-}
-
-.marker-modal-animal {
-  margin: 8px 0 0 0;
-  font-size: 16px;
 }
 
 .activity-preview-title {
@@ -650,6 +642,23 @@ button:focus-visible {
 }
 
 .activity-view-all-btn:hover {
+  background: #f3f4f6;
+}
+
+.gallery-view-all-btn {
+  width: 100%;
+  margin: 6px 0 10px 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  cursor: pointer;
+}
+
+.gallery-view-all-btn:hover {
   background: #f3f4f6;
 }
 
@@ -783,4 +792,174 @@ button:focus-visible {
 .activity-load-more {
   margin-top: 10px;
   width: 100%;
+}
+
+.gallery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.gallery-sheet {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+}
+
+.gallery-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.gallery-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.gallery-count {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.gallery-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.gallery-grid-item {
+  aspect-ratio: 1 / 1;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+}
+
+.gallery-grid-item:hover img,
+.gallery-grid-item:focus-visible img {
+  transform: scale(1.04);
+}
+
+.gallery-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.15s ease;
+}
+
+.gallery-status {
+  text-align: center;
+  color: #6b7280;
+  padding: 40px 0;
+  font-size: 14px;
+}
+
+.gallery-status--error {
+  color: #dc2626;
+}
+
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.lightbox-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.lightbox-close:hover,
+.lightbox-close:focus-visible {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.lightbox-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  font-size: 36px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.lightbox-arrow:hover,
+.lightbox-arrow:focus-visible {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.lightbox-arrow--prev {
+  left: 12px;
+}
+
+.lightbox-arrow--next {
+  right: 12px;
+}
+
+.lightbox-counter {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  letter-spacing: 0.02em;
 }
