@@ -100,3 +100,61 @@ def ensure_marker_public_id_column():
             )
         )
         conn.execute(text("ALTER TABLE markers ALTER COLUMN public_id SET NOT NULL"))
+
+
+def ensure_marker_note_column():
+    """Rename the legacy markers.key_info column to markers.note if needed.
+
+    The model was renamed from ``key_info`` to ``note`` without migration
+    tooling, so older databases may still have the old column name.
+    """
+    with engine.begin() as conn:
+        has_table = conn.execute(
+            text(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_name = 'markers'
+                )
+                """
+            )
+        ).scalar()
+        if not has_table:
+            return
+
+        has_note = conn.execute(
+            text(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'markers'
+                      AND column_name = 'note'
+                )
+                """
+            )
+        ).scalar()
+
+        has_key_info = conn.execute(
+            text(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'markers'
+                      AND column_name = 'key_info'
+                )
+                """
+            )
+        ).scalar()
+
+        if has_note:
+            return
+
+        if has_key_info:
+            conn.execute(text("ALTER TABLE markers RENAME COLUMN key_info TO note"))
+        else:
+            conn.execute(text("ALTER TABLE markers ADD COLUMN note VARCHAR"))

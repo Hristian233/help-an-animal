@@ -1,12 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, engine, ensure_marker_public_id_column
+from app.database import (
+    Base,
+    engine,
+    ensure_marker_note_column,
+    ensure_marker_public_id_column,
+)
 from app.rate_limit import RateLimitMiddleware
 from app.routers import markers, upload
 
 Base.metadata.create_all(bind=engine)
 ensure_marker_public_id_column()
+ensure_marker_note_column()
 
 app = FastAPI()
 
